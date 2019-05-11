@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>504</width>
+    <height>533</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="windowIcon">
+   <iconset theme="./Icon.png"/>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout_Main" stretch="0,10,0">
+      <item>
+       <layout class="QVBoxLayout" name="vLayout_Buttons">
+        <item>
+         <widget class="QPushButton" name="pushButton_CreateAccount">
+          <property name="text">
+           <string>Create Account</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_DeleteAccount">
+          <property name="text">
+           <string>Delete Account</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="hLayout_ListViews">
+        <item>
+         <widget class="QListWidget" name="listWidget_Accounts">
+          <property name="selectionRectVisible">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListWidget" name="listWidget_Keys"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="hLayout_Filters">
+        <item>
+         <widget class="QLineEdit" name="lineEdit_AccountFilter"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLineEdit" name="lineEdit_SelectedKeyValue"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>504</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="defaultUp">
+    <bool>false</bool>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="action_Save"/>
+    <addaction name="action_SaveAs"/>
+    <addaction name="action_Load"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuOther">
+    <property name="title">
+     <string>Other</string>
+    </property>
+    <addaction name="action_PasswordGenerator"/>
+    <addaction name="separator"/>
+    <addaction name="action_Settings"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuOther"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionTest">
+   <property name="text">
+    <string>Test</string>
+   </property>
+  </action>
+  <action name="actionBlack">
+   <property name="text">
+    <string>Simple Black</string>
+   </property>
+  </action>
+  <action name="actionDark_Blue">
+   <property name="text">
+    <string>Dark Blue</string>
+   </property>
+  </action>
+  <action name="actionLight">
+   <property name="text">
+    <string>Light</string>
+   </property>
+  </action>
+  <action name="action_SaveAs">
+   <property name="text">
+    <string>Save As</string>
+   </property>
+  </action>
+  <action name="action_Save">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="action_Load">
+   <property name="text">
+    <string>Load</string>
+   </property>
+  </action>
+  <action name="action_Light">
+   <property name="text">
+    <string>Light</string>
+   </property>
+  </action>
+  <action name="action_Black">
+   <property name="text">
+    <string>Black</string>
+   </property>
+  </action>
+  <action name="action_DarkBlue">
+   <property name="text">
+    <string>Dark Blue</string>
+   </property>
+  </action>
+  <action name="action_PasswordGenerator">
+   <property name="text">
+    <string>Password Generator</string>
+   </property>
+  </action>
+  <action name="action_AES_Encryptor">
+   <property name="text">
+    <string>AES Encryption</string>
+   </property>
+  </action>
+  <action name="action_BaseEncoder">
+   <property name="text">
+    <string>Base Encoder</string>
+   </property>
+  </action>
+  <action name="action_Hasher">
+   <property name="text">
+    <string>Data Hasher</string>
+   </property>
+  </action>
+  <action name="action_Darcula">
+   <property name="text">
+    <string>Darcula</string>
+   </property>
+  </action>
+  <action name="action_Dark">
+   <property name="text">
+    <string>Dark</string>
+   </property>
+  </action>
+  <action name="action_V15">
+   <property name="text">
+    <string>V15</string>
+   </property>
+  </action>
+  <action name="action_Skyrim">
+   <property name="text">
+    <string>Skyrim</string>
+   </property>
+  </action>
+  <action name="action_Settings">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
