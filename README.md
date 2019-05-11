@@ -9,4 +9,6 @@ Rather than using a server (which is the primary thing I'm trying to avoid) this
 
 It also contains an integrated password generator, and the support for theming (any old QSS file will do). 
 
+In addition, rather than following a strict Username:Password format, this password manager acts more like a dictionary. You can insert as many keys/values into an account, which is something about other password managers that annoyed me. Sometimes, it's not as simple as Username:Password, sometimes you need to store Emails, security questions, recovery codes, pin codes, and other kind of information that can't fit in a simpele Username:Password format. Here, the keys and values are up to you. 
+
 Pre-built binaries will be released shortly. 
