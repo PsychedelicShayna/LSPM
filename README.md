@@ -8,3 +8,5 @@ This project uses Qt, OpenSSL, and the Nlohmann Json library. The latter being i
 Rather than using a server (which is the primary thing I'm trying to avoid) this stores everything locally in "UEPM" files, which are just regular old JSON files, but with optional AES-CBC 128, 192, or 256 encryption on top. 
 
 It also contains an integrated password generator, and the support for theming (any old QSS file will do). 
+
+Pre-built binaries will be released shortly. 
