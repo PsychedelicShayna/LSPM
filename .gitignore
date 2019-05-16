@@ -1,6 +1,6 @@
-*
-!readme
+/*
+.gitignore
 !source/
-!source/uis/
-!source/headers/
-!.gitignore
+**/.DS_Store
+**/.user
+**~
