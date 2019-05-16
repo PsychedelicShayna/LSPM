@@ -1,4 +1,4 @@
-#include "password_generator_dialogue.hxx"
+#include "headers/password_generator_dialogue.hxx"
 #include "ui_password_generator_dialogue.h"
 
 void PasswordGeneratorDialogue::generateSeed_() {

@@ -1,12 +1,10 @@
-#include "wallet.hxx"
+#include "headers/wallet.hxx"
 
-void Wallet::LoadDirect(std::vector<uint8_t> data, std::vector<uint8_t>* key) {
-    if(key != nullptr) data = this->DecryptionFunction(data, *key);
-
+void Wallet::LoadDirect(std::vector<uint8_t> data) {
     Json jWallet;
 
     try{ jWallet = Json::parse(std::string(data.begin(), data.end())); }
-    catch(const Json::exception&) {
+    catch(const Json::exception& exception) {
         throw std::invalid_argument("Failed to parse; the data is probably encrypted, but decryption is disabled.");
     }
 
@@ -29,7 +27,7 @@ void Wallet::LoadDirect(std::vector<uint8_t> data, std::vector<uint8_t>* key) {
     }
 }
 
-void Wallet::LoadFile(const std::string& path, std::vector<uint8_t>* key) {
+void Wallet::LoadFile(const std::string& path) {
     std::ifstream input_stream(path, std::ios::binary);
     if(!input_stream.good()) {
         std::string error_message = std::string("Attempted to open the file").append(path).append(" but the stream wasn't good. The file may not exist.");
@@ -43,19 +41,18 @@ void Wallet::LoadFile(const std::string& path, std::vector<uint8_t>* key) {
 
     input_stream.close();
 
-    this->LoadDirect(data, key);
+    this->LoadDirect(data);
 }
 
-std::vector<uint8_t> Wallet::DumpDirect(const std::vector<uint8_t>* key) const {
+std::vector<uint8_t> Wallet::DumpDirect() const {
     std::string json_dump = Json(this->walletData_).dump();
     std::vector<uint8_t> return_buffer(json_dump.begin(), json_dump.end());
 
-    if(key != nullptr) return_buffer = this->EncryptionFunction(return_buffer, *key);
     return return_buffer;
 }
 
-void Wallet::DumpFile(const std::string& path, const std::vector<uint8_t>* key) const {
-    std::vector<uint8_t> data = this->DumpDirect(key);
+void Wallet::DumpFile(const std::string& path) const {
+    std::vector<uint8_t> data = this->DumpDirect();
 
     std::ofstream output_stream(path, std::ios::binary | std::ios::trunc);
     if(output_stream.good()) {
@@ -124,32 +121,12 @@ std::vector<std::pair<std::string, std::string>> Wallet::GetAccountEntries(const
     return return_buffer;
 }
 
-
 void Wallet::operator=(const Wallet& old)  {
     this->walletData_ = old.walletData_;
-    this->EncryptionFunction = old.EncryptionFunction;
-    this->DecryptionFunction = old.DecryptionFunction;
 }
 
 Wallet::Wallet(const Wallet& old) : WalletData(walletData_) {
     *this = old;
 }
 
-Wallet::Wallet() : WalletData(walletData_) {
-    this->EncryptionFunction = [](std::vector<uint8_t> data, std::vector<uint8_t> key) -> std::vector<uint8_t> {
-        BasicAes basicAes;
-        basicAes.LoadKey<BasicAes::AES_256>(key);
-        return basicAes.Encrypt(data);
-    };
-
-    this->DecryptionFunction = [](std::vector<uint8_t> data, std::vector<uint8_t> key) -> std::vector<uint8_t> {
-        BasicAes basicAes;
-        basicAes.LoadKey<BasicAes::AES_256>(key);
-        return basicAes.Decrypt(data);
-    };
-}
-
-Wallet::Wallet(CryptoFunction encryptionFunction, CryptoFunction decryptionFunction)  : WalletData(walletData_) {
-    this->EncryptionFunction = encryptionFunction;
-    this->DecryptionFunction = decryptionFunction;
-}
+Wallet::Wallet() : WalletData(walletData_) {}

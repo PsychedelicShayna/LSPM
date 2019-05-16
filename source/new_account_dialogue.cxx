@@ -1,5 +1,5 @@
-#include "main_window_dialogue.hxx"
-#include "new_account_dialogue.hxx"
+#include "headers/main_window_dialogue.hxx"
+#include "headers/new_account_dialogue.hxx"
 #include "ui_new_account_dialogue.h"
 
 void NewAccountDialogue::on_action_Generator_triggered() {
@@ -103,14 +103,10 @@ void NewAccountDialogue::on_listWidget_Values_itemDoubleClicked(QListWidgetItem*
     this->ui->listWidget_Values->editItem(item);
 }
 
-void NewAccountDialogue::closeEvent(QCloseEvent*) {
-    this->modificationsCompleteCallback_(this->modifiedWalletCopy_);
-}
-
-// Wallet wallet, const std::string* replacing, std::function<void(Wallet)> callback
-
 NewAccountDialogue::NewAccountDialogue(const Wallet& wallet, std::function<void(Wallet)> callback, const std::string* replacing_account, QWidget* parent) : QMainWindow(parent), ui(new Ui::NewAccountDialogue) {
     this->ui->setupUi(this);
+
+    this->setWindowModality(Qt::ApplicationModal);
 
     this->modifiedWalletCopy_ = wallet;
     this->modificationsCompleteCallback_ = callback;
@@ -125,7 +121,6 @@ NewAccountDialogue::NewAccountDialogue(const Wallet& wallet, std::function<void(
         }
     }
 }
-
 
 NewAccountDialogue::~NewAccountDialogue() {
     delete ui;

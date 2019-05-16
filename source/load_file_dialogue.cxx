@@ -1,209 +1,113 @@
-#include "load_file_dialogue.hxx"
+#include "headers/load_file_dialogue.hxx"
 #include "ui_load_file_dialogue.h"
 
 void LoadFileDialogue::on_toolButton_Browse_clicked() {
     static QFileDialog* file_dialogue = nullptr;
-    if(file_dialogue != nullptr)  delete file_dialogue;
-
-    file_dialogue = new QFileDialog();
+    if(file_dialogue != nullptr) delete file_dialogue;
+    file_dialogue = new QFileDialog;
 
     const QString& file_path = file_dialogue->getOpenFileName(this, "Wallet Location", "", "*.uepm");
     this->ui->lineEdit_FilePath->setText(file_path);
 }
 
 void LoadFileDialogue::on_comboBox_AESMode_currentIndexChanged(int index) {
-    if(index > 0) {
-        this->ui->comboBox_KeyMode->setEnabled(true);
-        this->ui->lineEdit_EncryptionKey->setEnabled(true);
-
-        switch(index) {
-            case 1 : {
-                this->selectedAesMode_ = BasicAes::AES_128;
-                break;
-            }
-
-            case 2 : {
-                this->selectedAesMode_ = BasicAes::AES_192;
-                break;
-            }
-
-            case 3 : {
-                this->selectedAesMode_ = BasicAes::AES_256;
-                break;
-            }
-        }
-    } else {
-        this->selectedAesMode_ = static_cast<BasicAes::AES_MODE>(NULL);
-        this->ui->comboBox_KeyMode->setEnabled(false);
-        this->ui->lineEdit_EncryptionKey->setEnabled(false);
-    }
+    this->ui->lineEdit_EncryptionKey->setEnabled(index != 0);
+    this->ui->comboBox_KeyMode->setEnabled(index != 0);
 }
 
-void LoadFileDialogue::on_comboBox_KeyMode_currentIndexChanged(int index) {
-    switch(index) {
-        case 0 : {
-            this->selectedKeyMode_ = KEY_MODE::DIGEST;
-            break;
-        }
-
-        case 1 : {
-            this->selectedKeyMode_ = KEY_MODE::DIRECT;
-            break;
-        }
-    }
-}
-
+// Event handler for when the LoadFile button is clicked.
 void LoadFileDialogue::on_pushButton_LoadFile_clicked() {
-    const std::string& file_path = this->ui->lineEdit_FilePath->text().toStdString();
-    Wallet loaded_wallet;
 
-    EncryptionData* encryptionData = new EncryptionData {
-        this->selectedKeyMode_,
-        this->selectedAesMode_,
-        this->ui->lineEdit_EncryptionKey->text().toStdString(),
-        file_path
-    };
+    // Fetches the path currently typed into the FilePath lineEdit box.
+    const std::string file_path = ui->lineEdit_FilePath->text().toStdString();
 
-    if(this->selectedAesMode_ == NULL) {
-        try {
-            loaded_wallet.LoadFile(file_path);
-            this->walletLoadedCallback_(loaded_wallet, true, encryptionData);
-        }
+    // Opens an input stream to the file at that path.
+    std::ifstream input_stream(file_path, std::ios::binary);
 
-        catch(const std::invalid_argument& exception) {
-            static QMessageBox* messagebox_error = nullptr;
-            if(messagebox_error != nullptr) delete messagebox_error;
-            messagebox_error = new QMessageBox(this);
-            messagebox_error->setText(exception.what());
-            messagebox_error->show();
-            return;
-        }
-
-        this->close();
-    } else {
-        std::ifstream input_stream(file_path, std::ios::binary);
-        if(!input_stream.good()) {
-            static QMessageBox* messagebox_error = nullptr;
-            if(messagebox_error != nullptr) delete messagebox_error;
-            messagebox_error = new QMessageBox(this);
-            messagebox_error->setText("The file probably doesn't exist (the stream wasn't good).");
-            messagebox_error->show();
-            return;
-        }
-
+    // If the stream isn't good, then the whole operation is aborted, and nothing is done.
+    if(input_stream.good()) {
+        /* Reads the entire contents of the input_stream into the file_data vector, and closes the stream.
+         * At this point, the file data should either contain AES encrypted JSON data, or raw JSON data.
+         * The JSON data will later be parsed into a wallet object (if encrypted, decryption is done first). */
         std::vector<uint8_t> file_data((std::istreambuf_iterator<char>(input_stream)), (std::istreambuf_iterator<char>()));
         input_stream.close();
 
-        // Encryption Setup ---------------------------------------------------------
-        BasicAes basicAes;
+        // Will store the parsed wallet content (if parsing is successful).
+        Wallet loaded_wallet;
 
-        // Gets the encryption key specified in the encryption key textbox.
-        std::string raw_encryption_key = this->ui->lineEdit_EncryptionKey->text().toStdString();
+        // Will store the AesCredentials used to decrypt the wallet (if applicable).
+        AesCredentials aes_credentials;
 
-        // Checks if the encryption key size is above zero.
-        if(!raw_encryption_key.size()) {
-            static QMessageBox* messagebox_error = nullptr;
-            if(messagebox_error != nullptr) delete messagebox_error;
-            messagebox_error = new QMessageBox(this);
-            messagebox_error->setText("Please specify an encryption key.");
-            messagebox_error->show();
-            return;
-        }
+        /* If the current index of the AESMode comboBox is greater than zero, then something other than "No Encryption"
+         * is currently selected, as "No Encryption" is the first element, therefore index 0, and the rest of the elements
+         * are various AES encryption modes (128, 192, 256). If this is true, then encryption is enabled, and the following
+         * code will be responsible for decrypting the file data before attempting to parse it. */
+        if(ui->comboBox_AESMode->currentIndex() > 0) {
+            BasicAes basic_aes;
 
-        // Checks the encryption settings, and configures the basicAes instance according to those settings.
-        if(this->selectedKeyMode_ == KEY_MODE::DIGEST) {
-            switch(this->selectedAesMode_) {
-            case BasicAes::AES_128 :
-                basicAes.LoadKey<BasicAes::AES_128>(raw_encryption_key);
-                break;
+            // Converts the current AESMode comboBox index (1, 2, or 3) into an AES_MODE enum with a value of either 16, 24, or 32.
+            AES_MODE aes_mode = static_cast<AES_MODE>((8*ui->comboBox_AESMode->currentIndex()) + 8);
 
-            case BasicAes::AES_192 :
-                basicAes.LoadKey<BasicAes::AES_192>(raw_encryption_key);
-                break;
+            // Reads the encryption key from lineEdit_EncryptionKey, and converts it into a byte vector.
+            std::string encryption_key_string = ui->lineEdit_EncryptionKey->text().toStdString();
+            std::vector<uint8_t> encryption_key(encryption_key_string.begin(), encryption_key_string.end());
 
-            case BasicAes::AES_256 :
-                basicAes.LoadKey<BasicAes::AES_256>(raw_encryption_key);
-                break;
+            try {
+                // If the current index of the KeyMode comboBox is zero (digest mode) then load the Sha256 digest of the encryption key.
+                if(ui->comboBox_KeyMode->currentIndex() == 0) basic_aes.LoadKeySha256(encryption_key, aes_mode);
+
+                /* If the current index of the KeyMode comboBox is one (direct mode) then load the encryption key directly.
+                 * This throw an exception if the encryption key doesn't match the mode key size. */
+                else if(ui->comboBox_KeyMode->currentIndex() == 1) basic_aes.LoadKey(encryption_key, aes_mode);
+
+                // Now that the key has been loaded, the file data is re-assigned to the decrypted version of itself.
+                file_data = basic_aes.Decrypt(file_data);
+
+                // An AesCredentials structure is dumped from the basic_aes object, storing the encryption/decryption key, and the iv currently loaded.
+                aes_credentials = basic_aes.DumpCredentials();
             }
-        }
-        else if(this->selectedKeyMode_ == KEY_MODE::DIRECT) {
-            if(raw_encryption_key.size() == this->selectedAesMode_) {
-                switch(this->selectedAesMode_) {
-                case BasicAes::AES_128 : {
-                    std::array<uint8_t, BasicAes::AES_128> raw_encryption_key_array;
-                    memcpy(raw_encryption_key_array.data(), raw_encryption_key.data(), BasicAes::AES_128);
-                    basicAes.LoadKeyDirect<BasicAes::AES_128>(raw_encryption_key_array);
-                    break;
-                }
 
-                case BasicAes::AES_192 : {
-                    std::array<uint8_t, BasicAes::AES_192> raw_encryption_key_array;
-                    memcpy(raw_encryption_key_array.data(), raw_encryption_key.data(), BasicAes::AES_192);
-                    basicAes.LoadKeyDirect<BasicAes::AES_192>(raw_encryption_key_array);
-                    break;
-                }
-
-                case BasicAes::AES_256 : {
-                    std::array<uint8_t, BasicAes::AES_256> raw_encryption_key_array;
-                    memcpy(raw_encryption_key_array.data(), raw_encryption_key.data(), BasicAes::AES_256);
-                    basicAes.LoadKeyDirect<BasicAes::AES_256>(raw_encryption_key_array);
-                    break;
-                }
-                }
-            } else {
-                static QMessageBox* messagebox_error = nullptr;
-                if(messagebox_error != nullptr) delete messagebox_error;
-                messagebox_error = new QMessageBox(this);
-                messagebox_error->setText(QString("The size of the encryption key must be ").append(QString::number(this->selectedAesMode_)).append(" bytes."));
-                messagebox_error->show();
+            // The most common points of failure in the try block throw invalid_argument exceptions.
+            catch (const std::invalid_argument& exception) {
+                mbalert(exception.what(), this)
+                std::cerr << exception.what() << std::endl;
                 return;
             }
         }
-        // --------------------------------------------------------------------------
 
-        // Decrypt the wallet data. Failed decryption procudes an incorrect output.
-        std::vector<uint8_t> decrypted_wallet_data = basicAes.Decrypt(file_data);
-
-        // Attepts to load the decrypted wallet data. This should throw an exception if the decrypted output is incorrect.
         try {
-            loaded_wallet.LoadDirect(decrypted_wallet_data);
-            this->walletLoadedCallback_(loaded_wallet, true, encryptionData);
-            this->close();
+            // At this point, if decryption was enabled, file_data has been decrypted, and is ready to be parsed. This parses it into loadd_wallet.
+            loaded_wallet.LoadDirect(file_data);
+        } catch(const std::invalid_argument& exception) {
+            mbalert(exception.what(), this)
             return;
         }
 
-        catch(const std::invalid_argument&) {
-            static QMessageBox* messagebox_error = nullptr;
-            if(messagebox_error != nullptr) delete messagebox_error;
-            messagebox_error = new QMessageBox(this);
-            messagebox_error->setText("Failed to decrypt the wallet, perhaps the key, or decryption settings are incorrect.");
-            messagebox_error->show();
-            return;
-        }
+
+        /* Calls the dialogue callback with the newly parsed wallet data, the path to the file that was read, and the AesCredentials used to
+         * decrypt the file, if applicable. If aes_credentials was dumped from loaded_wallet, then the aes_credentials.Valid will be true,
+         * otherwise, if it is left initialized via the default constructor, then it will be false. */
+        this->walletLoadedCallback_(loaded_wallet, file_path, aes_credentials);
+        this->close();
+    } else {
+       mbalert("The input stream to the file wasn't good.", this)
     }
 }
 
-void LoadFileDialogue::closeEvent(QCloseEvent*) {
-    this->walletLoadedCallback_(Wallet(), false, nullptr);
+void LoadFileDialogue::LoadState(LoadFileDialogueState state) {
+    ui->lineEdit_FilePath->setText(QString::fromStdString(state.lineEdit_FilePath_Text));
+    ui->comboBox_AESMode->setCurrentIndex(state.comboBox_AESMode_Index);
+    ui->comboBox_KeyMode->setCurrentIndex(state.comboBox_KeyMode_Index);
 }
 
-void LoadFileDialogue::reject() {
-    this->walletLoadedCallback_(Wallet(), false, nullptr);
-}
-
-void LoadFileDialogue::SetDefaultState(const std::string& path, int aes_mode_index, int key_mode_index) {
-    this->ui->lineEdit_FilePath->setText(QString::fromStdString(path));
-    this->ui->comboBox_AESMode->setCurrentIndex(aes_mode_index);
-    this->ui->comboBox_KeyMode->setCurrentIndex(key_mode_index);
-}
-
-LoadFileDialogue::LoadFileDialogue(std::function<void(Wallet, bool, EncryptionData*)> callback, QWidget* parent) : QDialog(parent), ui(new Ui::LoadFileDialogue) {
-    this->selectedAesMode_ = static_cast<BasicAes::AES_MODE>(NULL);
-    this->selectedKeyMode_ = static_cast<KEY_MODE>(NULL);
+LoadFileDialogue::LoadFileDialogue(std::function<void(Wallet, std::string, AesCredentials)> callback, QWidget* parent) : QDialog(parent), ui(new Ui::LoadFileDialogue) {
     this->walletLoadedCallback_ = callback;
+    this->setModal(true);
     ui->setupUi(this);
 }
 
 LoadFileDialogue::~LoadFileDialogue() {
     delete ui;
 }
+
+

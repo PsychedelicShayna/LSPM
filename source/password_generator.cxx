@@ -1,4 +1,4 @@
-#include "password_generator.hxx"
+#include "headers/password_generator.hxx"
 
 void PasswordGenerator::Configure(std::vector<std::pair<CharSet, uint32_t>> const& selections) {
     static const char* character_sets[5] = {

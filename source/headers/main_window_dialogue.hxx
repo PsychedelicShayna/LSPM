@@ -4,6 +4,7 @@
 /* -------------------------- */
 /* Stl Includes               */
 /* -------------------------- */
+#include <experimental/filesystem>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -15,6 +16,7 @@
 #include <QMainWindow>
 #include <QTextStream>
 #include <QListWidget>
+#include <QWidget>
 #include <QFile>
 /* -------------------------- */
 
@@ -34,7 +36,10 @@
 #include "password_generator.hxx"
 #include "basic_aes.hxx"
 #include "wallet.hxx"
+#include "macros.hxx"
 /* -------------------------- */
+
+namespace fs = std::experimental::filesystem;
 
 namespace Ui {
     class MainWindow;
@@ -45,8 +50,10 @@ private:
     Ui::MainWindow* ui;
     Q_OBJECT
 
+    bool walletInMemory_;
     Wallet loadedWallet_;
-    EncryptionData* encryptionData_;
+    std::string walletPath_;
+    AesCredentials aesCredentials_;
 
 private slots:
     void on_pushButton_CreateAccount_clicked();
@@ -67,11 +74,9 @@ private slots:
     void on_lineEdit_AccountFilter_textChanged(const QString&);
 
 public:
-    bool LoadQStyleSheet(const std::string& name);
+    const Wallet& LoadedWallet;
 
-    const Wallet& LoadedWallet = loadedWallet_;
-
-    void SetModificationAllowed(bool);
+    bool LoadQStyleSheet(const std::string&);
     void UpdateListWidgets();
 
     explicit MainWindow(QWidget* parent = nullptr);

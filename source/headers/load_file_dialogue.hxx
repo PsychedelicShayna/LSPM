@@ -5,54 +5,41 @@
 #include <QMessageBox>
 #include <QDialog>
 
+#include <experimental/filesystem>
 #include <functional>
 
 #include "basic_aes.hxx"
 #include "wallet.hxx"
+#include "macros.hxx"
+
+namespace fs = std::experimental::filesystem;
 
 namespace Ui {
     class LoadFileDialogue;
 }
-
-enum struct KEY_MODE {
-    DIGEST = 0, DIRECT = 1
-};
-
-struct EncryptionData {
-    KEY_MODE KeyMode;
-    BasicAes::AES_MODE AesMode;
-    std::string EncryptionKey;
-    std::string WalletPath;
-
-    EncryptionData() = default;
-};
 
 class LoadFileDialogue : public QDialog {
 private:
     Ui::LoadFileDialogue* ui;
     Q_OBJECT
 
-    std::function<void(Wallet, bool, EncryptionData*)> walletLoadedCallback_;
-    Wallet targetWallet_;
-
-    BasicAes::AES_MODE selectedAesMode_;
-    KEY_MODE selectedKeyMode_;
+    std::function<void(Wallet, std::string, AesCredentials)> walletLoadedCallback_;
 
 private slots:
+    void on_comboBox_AESMode_currentIndexChanged(int);
+    void on_pushButton_LoadFile_clicked();
     void on_toolButton_Browse_clicked();
 
-    void on_comboBox_AESMode_currentIndexChanged(int);
-    void on_comboBox_KeyMode_currentIndexChanged(int);
-
-    void on_pushButton_LoadFile_clicked();
-
-    void closeEvent(QCloseEvent*) override;
-    void reject() override;
-
 public:
-    void SetDefaultState(const std::string&, int, int);
+    struct LoadFileDialogueState {
+        std::string lineEdit_FilePath_Text;
+        int comboBox_AESMode_Index;
+        int comboBox_KeyMode_Index;
+    };
 
-    explicit LoadFileDialogue(std::function<void(Wallet, bool, EncryptionData*)>, QWidget*);
+    void LoadState(LoadFileDialogueState);
+
+    explicit LoadFileDialogue(std::function<void(Wallet, std::string, AesCredentials)>, QWidget*);
     ~LoadFileDialogue() override;
 };
 

@@ -24,7 +24,7 @@ private:
     Ui::SettingsDialogue* ui;
     Q_OBJECT
 
-    std::function<void(Json*)> callback_;
+    std::function<void(Json)> callback_;
 
 private slots:
     void on_comboBox_EncryptionMode_currentIndexChanged(int);
@@ -34,11 +34,8 @@ private slots:
 
     void on_pushButton_SaveSettings_clicked();
 
-    void closeEvent(QCloseEvent*) override;
-    void reject() override;
-
 public:
-    explicit SettingsDialogue(std::function<void(Json*)>, QWidget* parent);
+    explicit SettingsDialogue(std::function<void(Json)>, QWidget* parent);
     ~SettingsDialogue() override;
 
 };

@@ -12,7 +12,6 @@
 #include <map>
 
 #include "password_generator_dialogue.hxx"
-#include "logger.hxx"
 #include "wallet.hxx"
 
 namespace Ui {
@@ -44,10 +43,10 @@ protected:
     Wallet modifiedWalletCopy_;
 
 private slots:
-    /* Event handler for when the password generator action in the menubar is clicked. */
+    // Event handler for when the password generator action in the menubar is clicked.
     void on_action_Generator_triggered();
 
-    /* Event handler for when the insert button is clicked. */
+    // Event handler for when the insert button is clicked.
     void on_pushButton_Insert_clicked();
 
     // Event handler for when the remove button is clicked.
@@ -62,12 +61,9 @@ private slots:
     // Event handler for when an item in the value list wiedget is double clicked.
     void on_listWidget_Values_itemDoubleClicked(QListWidgetItem*);
 
-    // Overriden event handler for when the window is closed.
-    void closeEvent(QCloseEvent*) override;
-
 public:
     explicit NewAccountDialogue(const Wallet&, std::function<void(Wallet)>, const std::string*, QWidget* = nullptr);
-    ~NewAccountDialogue();
+    ~NewAccountDialogue() override;
 };
 
 #endif
