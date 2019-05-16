@@ -103,10 +103,17 @@ void NewAccountDialogue::on_listWidget_Values_itemDoubleClicked(QListWidgetItem*
     this->ui->listWidget_Values->editItem(item);
 }
 
+void NewAccountDialogue::closeEvent(QCloseEvent*) {
+    this->parent_->setEnabled(true);
+}
+
 NewAccountDialogue::NewAccountDialogue(const Wallet& wallet, std::function<void(Wallet)> callback, const std::string* replacing_account, QWidget* parent) : QMainWindow(parent), ui(new Ui::NewAccountDialogue) {
     this->ui->setupUi(this);
 
-    this->setWindowModality(Qt::ApplicationModal);
+    this->parent_ = parent;
+
+    parent->setEnabled(false);
+    this->setEnabled(true);
 
     this->modifiedWalletCopy_ = wallet;
     this->modificationsCompleteCallback_ = callback;

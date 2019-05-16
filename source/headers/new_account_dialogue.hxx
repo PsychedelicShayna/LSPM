@@ -42,6 +42,8 @@ protected:
      * the intended use, is for the callback to replace the original, with the newly modified copy. */
     Wallet modifiedWalletCopy_;
 
+    QWidget* parent_;
+
 private slots:
     // Event handler for when the password generator action in the menubar is clicked.
     void on_action_Generator_triggered();
@@ -60,6 +62,8 @@ private slots:
 
     // Event handler for when an item in the value list wiedget is double clicked.
     void on_listWidget_Values_itemDoubleClicked(QListWidgetItem*);
+
+    void closeEvent(QCloseEvent*) override;
 
 public:
     explicit NewAccountDialogue(const Wallet&, std::function<void(Wallet)>, const std::string*, QWidget* = nullptr);

@@ -41,7 +41,6 @@ void SaveFileDialogue::on_pushButton_SaveWallet_clicked() {
         output_stream.write(reinterpret_cast<const char*>(wallet_data.data()), static_cast<std::streamsize>(wallet_data.size()));
         output_stream.close();
         this->close();
-        this->walletSavedCallback_();
     } else {
         mbalert("The stream to the file wasn't good.", this);
     }
@@ -53,17 +52,20 @@ void SaveFileDialogue::on_comboBox_EncryptionMode_currentIndexChanged(int index)
 }
 
 void SaveFileDialogue::closeEvent(QCloseEvent*) {
-    this->walletSavedCallback_();
+    this->parent_->setEnabled(true);
 }
 
 void SaveFileDialogue::reject() {
-    this->walletSavedCallback_();
+    this->parent_->setEnabled(true);
 }
 
-SaveFileDialogue::SaveFileDialogue(Wallet targetWallet, std::function<void()> walletSavedCallback, QWidget* parent) : QDialog(parent), ui(new Ui::SaveFileDialogue), TargetWallet(targetWallet_) {
+SaveFileDialogue::SaveFileDialogue(Wallet targetWallet, QWidget* parent) : QDialog(parent), ui(new Ui::SaveFileDialogue), TargetWallet(targetWallet_) {
     ui->setupUi(this);
+    this->parent_ = parent;
 
-    this->walletSavedCallback_ = walletSavedCallback;
+    parent->setEnabled(false);
+    this->setEnabled(true);
+
     this->targetWallet_ = targetWallet;
 }
 

@@ -94,20 +94,39 @@ void LoadFileDialogue::on_pushButton_LoadFile_clicked() {
     }
 }
 
+void LoadFileDialogue::on_lineEdit_FilePath_textChanged(const QString& pathqs) {
+    const std::string& path = pathqs.toStdString();
+
+    this->ui->lineEdit_FilePath->setStyleSheet(fs::exists(path) && !fs::is_directory(path) ? "color:#00FF00" : "color:#FF0000");
+}
 void LoadFileDialogue::LoadState(LoadFileDialogueState state) {
     ui->lineEdit_FilePath->setText(QString::fromStdString(state.lineEdit_FilePath_Text));
     ui->comboBox_AESMode->setCurrentIndex(state.comboBox_AESMode_Index);
     ui->comboBox_KeyMode->setCurrentIndex(state.comboBox_KeyMode_Index);
 }
 
+void LoadFileDialogue::closeEvent(QCloseEvent*) {
+    this->parent_->setEnabled(true);
+}
+
+void LoadFileDialogue::reject() {
+    this->parent_->setEnabled(true);
+}
+
 LoadFileDialogue::LoadFileDialogue(std::function<void(Wallet, std::string, AesCredentials)> callback, QWidget* parent) : QDialog(parent), ui(new Ui::LoadFileDialogue) {
     this->walletLoadedCallback_ = callback;
-    this->setModal(true);
+    this->parent_ = parent;
+
+    parent->setEnabled(false);
+    this->setEnabled(true);
+
     ui->setupUi(this);
 }
 
 LoadFileDialogue::~LoadFileDialogue() {
     delete ui;
 }
+
+
 
 

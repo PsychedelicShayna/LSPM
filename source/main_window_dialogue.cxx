@@ -130,7 +130,7 @@ void MainWindow::on_action_SaveAs_triggered() {
     static SaveFileDialogue* save_file_dialogue = nullptr;
     if(save_file_dialogue != nullptr) delete save_file_dialogue;
 
-    save_file_dialogue = new SaveFileDialogue(this->loadedWallet_, [](){}, this);
+    save_file_dialogue = new SaveFileDialogue(this->loadedWallet_, this);
 
     save_file_dialogue->show();
 }

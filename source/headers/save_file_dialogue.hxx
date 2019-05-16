@@ -29,8 +29,12 @@ private:
     Ui::SaveFileDialogue* ui;
     Q_OBJECT
 
-    std::function<void()> walletSavedCallback_;
     Wallet targetWallet_;
+
+    QWidget* parent_;
+
+    void closeEvent(QCloseEvent*) override;
+    void reject() override;
 
 private slots:
     void on_toolButton_BrowsePath_clicked();
@@ -38,13 +42,11 @@ private slots:
 
     void on_comboBox_EncryptionMode_currentIndexChanged(int);
 
-    void closeEvent(QCloseEvent*) override;
-    void reject() override;
 
 public:
     const Wallet& TargetWallet;
 
-    explicit SaveFileDialogue(Wallet, std::function<void()>, QWidget*);
+    explicit SaveFileDialogue(Wallet, QWidget*);
     ~SaveFileDialogue() override;
 };
 

@@ -24,11 +24,17 @@ private:
     Q_OBJECT
 
     std::function<void(Wallet, std::string, AesCredentials)> walletLoadedCallback_;
+    QWidget* parent_;
+
+    void closeEvent(QCloseEvent*) override;
+    void reject() override;
 
 private slots:
     void on_comboBox_AESMode_currentIndexChanged(int);
     void on_pushButton_LoadFile_clicked();
     void on_toolButton_Browse_clicked();
+
+    void on_lineEdit_FilePath_textChanged(const QString&);
 
 public:
     struct LoadFileDialogueState {

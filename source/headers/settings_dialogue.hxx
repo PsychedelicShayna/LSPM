@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QDialog>
 
+#include <experimental/filesystem>
 #include <functional>
 #include <iostream>
 #include <fstream>
@@ -13,6 +14,7 @@
 
 #include "json.txx"
 
+namespace fs = std::experimental::filesystem;
 using Json = nlohmann::json;
 
 namespace Ui {
@@ -25,6 +27,10 @@ private:
     Q_OBJECT
 
     std::function<void(Json)> callback_;
+    QWidget* parent_;
+
+    void closeEvent(QCloseEvent*) override;
+    void reject() override;
 
 private slots:
     void on_comboBox_EncryptionMode_currentIndexChanged(int);
@@ -33,6 +39,9 @@ private slots:
     void on_toolButton_BrowseStartupWallet_clicked();
 
     void on_pushButton_SaveSettings_clicked();
+
+    void on_lineEdit_StylePath_textChanged(const QString&);
+    void on_lineEdit_StartupWalletPath_textChanged(const QString&);
 
 public:
     explicit SettingsDialogue(std::function<void(Json)>, QWidget* parent);

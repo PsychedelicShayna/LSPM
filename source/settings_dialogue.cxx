@@ -59,10 +59,32 @@ void SettingsDialogue::on_pushButton_SaveSettings_clicked() {
     }
 }
 
+
+void SettingsDialogue::on_lineEdit_StylePath_textChanged(const QString& qspath) {
+    const std::string& path = qspath.toStdString();
+    this->ui->lineEdit_StylePath->setStyleSheet(fs::exists(path) && !fs::is_directory(path) ? "color: #00FF00" : "color: #FF0000");
+}
+
+void SettingsDialogue::on_lineEdit_StartupWalletPath_textChanged(const QString& qspath) {
+    const std::string& path = qspath.toStdString();
+    this->ui->lineEdit_StartupWalletPath->setStyleSheet(fs::exists(path) && !fs::is_directory(path) ? "color: #00FF00" : "color: #FF0000");
+}
+
+void SettingsDialogue::closeEvent(QCloseEvent*) {
+    this->parent_->setEnabled(true);
+}
+
+void SettingsDialogue::reject() {
+    this->parent_->setEnabled(true);
+}
+
 SettingsDialogue::SettingsDialogue(std::function<void(Json)> callback, QWidget* parent) : QDialog(parent), ui(new Ui::SettingsDialogue) {
     ui->setupUi(this);
 
-    this->setModal(true);
+    this->parent_ = parent;
+
+    parent->setEnabled(false);
+    this->setEnabled(true);
 
     this->callback_ = callback;
 
@@ -108,7 +130,7 @@ SettingsDialogue::SettingsDialogue(std::function<void(Json)> callback, QWidget* 
     }
 }
 
-
 SettingsDialogue::~SettingsDialogue() {
     delete ui;
 }
+
