@@ -12,7 +12,7 @@ void SettingsDialogue::on_toolButton_BrowseStartupWallet_clicked() {
 
     file_dialogue = new QFileDialog;
 
-    const QString& file_path = file_dialogue->getOpenFileName(this, "Wallet Location", "", "*.uepm");
+    const QString& file_path = file_dialogue->getOpenFileName(this, "Wallet Location", "", "*.lspm");
     this->ui->lineEdit_StartupWalletPath->setText(file_path);
 }
 

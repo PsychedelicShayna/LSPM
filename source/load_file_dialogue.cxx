@@ -6,7 +6,7 @@ void LoadFileDialogue::on_toolButton_Browse_clicked() {
     if(file_dialogue != nullptr) delete file_dialogue;
     file_dialogue = new QFileDialog;
 
-    const QString& file_path = file_dialogue->getOpenFileName(this, "Wallet Location", "", "*.uepm");
+    const QString& file_path = file_dialogue->getOpenFileName(this, "Wallet Location", "", "*.lspm");
     this->ui->lineEdit_FilePath->setText(file_path);
 }
 

@@ -9,7 +9,7 @@ void SaveFileDialogue::on_toolButton_BrowsePath_clicked() {
     }
 
     file_dialogue = new QFileDialog();
-    const QString& file_path = file_dialogue->getSaveFileName(this, "Wallet Location", "", "*.uepm");
+    const QString& file_path = file_dialogue->getSaveFileName(this, "Wallet Location", "", "*.lspm");
     this->ui->lineEdit_FilePath->setText(file_path);
 }
 
