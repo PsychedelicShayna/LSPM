@@ -1,14 +1,41 @@
-# Description
-(L)ocally (S)tored (P)assword (M)anager is an open source password manager built in Qt, and uses OpenSSL's AES-CBC encryption.
+# Locally Stored Password Manager
+This is an offline password manager built in C++ using Qt. This is one of the first projects I've ever made with Qt, and thus, there are some design flaws at the core of the program that if resolved would result in much cleaner, and structured code. The code in this project might change drastically at a certain point, as more time goes on, and I become more familiar with Qt.
 
-There are many password managers avalible, however I don't really trust any of them. Passwords always get stored on some server somewhere, and how their encryption works is entirely unknown. They could just store encryption keys, who knows. Anyways, a while back I created a very poor password manager in C#, which I never released publicly, then I wrote a sequel to it, also, never releasing it publicly. This is the third iteration, written in C++ and Qt instead of C#/Winforms. The code itself is quite chaotic as of the first commit, and a lot needs to be re-structured over time, however it's in a working state. Some bugs exist here and there, but it's a fully functional password manager. 
+### Privacy
+Why make this password manager when there are services such as LastPass, DashLane, 1Password, etc? Quite frankly: privacy. The primary point of this project is that nothing is cloud based, everything is stored locally. There isn't a server that holds all of your credentials hostage, nor will there ever be. This is a purely offline password manager that stores all of your credentials into AES encrypted `.lspm` wallet files. You can make as many of these files as you want, and do whatever you want with them knowing that the only copy of that file that exists is on your computer, and it's encrypted. 
 
-This project uses Qt, OpenSSL, and the Nlohmann Json library. The latter being included, the former two however aren't. If you plan on compiling this by yourself, you'll need a Qt environment, and the OpenSSL library installed.
+### Arbitrary Key/Value
+Rather than opting for a `username:password` system, where every account has a fixed amount of fields, I made it variable. The lack of this option in other password managers seriously bothered me for a long time. Sometimes, it's not as simple as `username:password`, sometimes you have to store an email, or security questions, or perhaps some kind of recovery code, or even multiple usernames/passwords for alternate accounts, etc. So I made it so that you decide the amount of keys, and their values. You can add any key you like, and assign it to any value you like. 
 
-Rather than using a server (which is the primary thing I'm trying to avoid) this stores everything locally in "UEPM" files, which are just regular old JSON files, but with optional AES-CBC 128, 192, or 256 encryption on top. 
+### Theming 
+Since this is Qt, and Qt has the QSS style format, implementing basic theming support was pretty simple. You can apply any Qt stylesheet you want to this password manager. 
 
-It also contains an integrated password generator, and the support for theming (any old QSS file will do). 
+### Integrated Password Generator
+Like most password managers, this includes a password generator directly built in, with a configurable seed. If you're like me, and you generate 256 character long passwords for every new account that you make, you'll find this handy.
 
-In addition, rather than following a strict Username:Password format, this password manager acts more like a dictionary. You can insert as many keys/values into an account, which is something about other password managers that annoyed me. Sometimes, it's not as simple as Username:Password, sometimes you need to store Emails, security questions, recovery codes, pin codes, and other kind of information that can't fit in a simpele Username:Password format. Here, the keys and values are up to you. 
+### Building
+If you plan on building this project yourself, you'll need a Qt/QMake environment, and a copy of OpenSSL. I've included a QMake project file in the source directory that you can use to build the project using Qt creator. Make sure to edit the QMake file to correctly point to your installation directory of OpenSSL. You will also need an up to date standard library, as this project makes use of C++17's experimental filesystem library. This was originally compiled with MSVC 2017 through Qt-Creator; your milage may vary with other compilers. 
 
-Pre-built binaries will be released shortly. 
+If you're struggling with manually compiling OpenSSL, you can find a [pre-built binary installer for windows here](https://slproweb.com/products/Win32OpenSSL.html)
+
+### Downloads/Binaries
+No binaries are currently availible; binaries will be released shortly.
+
+### Screenshots
+_These screenshots were taken with the [QtDark](https://github.com/EClaesson/QTDark) QSS stylesheet applied._
+
+**Main Dialogue**
+
+![](screenshots/Image1.png?raw=true)
+
+**Account Creation Dialogue**
+
+![](screenshots/Image2.png?raw=true)
+
+**Account Loading Dialogue**
+
+![](screenshots/Image3.png?raw=true)
+
+**Password Generator Dialogue** 
+
+![](screenshots/Image4.png?raw=true)
