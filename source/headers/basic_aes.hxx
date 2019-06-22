@@ -33,9 +33,9 @@ struct AesCredentials {
     std::array<uint8_t, AES_BLOCK_SIZE> InitializationVector;
     AES_KEY EncryptionKey;
     AES_KEY DecryptionKey;
-    const bool Valid;
+    bool Valid;
     
-    AesCredentials operator=(const AesCredentials&);
+    void operator=(const AesCredentials&);
     
     AesCredentials();
     AesCredentials(std::array<uint8_t, AES_BLOCK_SIZE>, AES_KEY, AES_KEY);

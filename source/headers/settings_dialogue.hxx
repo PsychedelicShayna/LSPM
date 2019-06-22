@@ -12,7 +12,7 @@
 #include <string>
 #include <map>
 
-#include "json.txx"
+#include "json.hxx"
 
 namespace fs = std::experimental::filesystem;
 using Json = nlohmann::json;

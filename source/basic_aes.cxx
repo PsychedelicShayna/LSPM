@@ -1,7 +1,10 @@
 #include "headers/basic_aes.hxx"
 
-AesCredentials AesCredentials::operator=(const AesCredentials& old) {
-    return AesCredentials(old);
+void AesCredentials::operator=(const AesCredentials& old) {
+    this->InitializationVector = old.InitializationVector;
+    this->EncryptionKey = old.EncryptionKey;
+    this->DecryptionKey = old.DecryptionKey;
+    this->Valid = old.Valid;
 }
 
 AesCredentials::AesCredentials() : Valid(false) {}
@@ -66,12 +69,17 @@ void BasicAes::LoadKeySha256(const std::vector<uint8_t>& key_bytevector, AES_MOD
 }
 
 AesCredentials BasicAes::DumpCredentials() const {
-    return AesCredentials(
+    AesCredentials returned_credentials(
         this->InitializationVector,
         this->AesCbcEncryptionKey,
-        this->aesCbcDecryptionKey_
+        this->AesCbcDecryptionKey
     );
+
+    returned_credentials.Valid = true;
+
+    return returned_credentials;
 }
+
 void BasicAes::LoadCredentials(const AesCredentials& credentials) {
     if(credentials.Valid) {
         this->InitializationVector = credentials.InitializationVector;

@@ -111,9 +111,21 @@ void MainWindow::on_action_Save_triggered() {
                 mbalert(exception.what(), this);
                 return;
             }
+        } else {
+            QMessageBox::StandardButton response = QMessageBox::question(
+                this,
+                "Warning",
+                "Do you wish to store your information without encryption? (AES Credentials reported invalid).",
+                QMessageBox::Yes | QMessageBox::No
+            );
+
+            if(response != QMessageBox::Yes) {
+                return;
+            }
         }
 
         std::ofstream output_stream(this->walletPath_, std::ios::trunc | std::ios::binary);
+
         if(output_stream.good()) {
             output_stream.write(reinterpret_cast<char*>(wallet_data.data()), static_cast<std::streamsize>(wallet_data.size()));
             output_stream.close();
@@ -121,6 +133,7 @@ void MainWindow::on_action_Save_triggered() {
         } else {
             mbalert("The output stream wasn't good.", this);
         }
+
     } else {
         mbalert("There is no wallet in memory to save, load a wallet first.", this)
     }
