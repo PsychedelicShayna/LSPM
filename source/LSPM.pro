@@ -21,36 +21,13 @@ CONFIG += c++17
 
 SOURCES += \
     main.cxx \
-    wallet.cxx \
-    basic_aes.cxx \
-    settings_dialogue.cxx \
-    password_generator.cxx \
-    save_file_dialogue.cxx \
-    load_file_dialogue.cxx \
-    main_window_dialogue.cxx \
-    new_account_dialogue.cxx \
-    password_generator_dialogue.cxx
+    main_window_dialogue.cxx
 
 HEADERS += \
-    headers/json.hxx \
-    headers/macros.hxx \
-    headers/wallet.hxx \
-    headers/basic_aes.hxx \
-    headers/settings_dialogue.hxx \
-    headers/save_file_dialogue.hxx \
-    headers/password_generator.hxx \
-    headers/load_file_dialogue.hxx \
-    headers/main_window_dialogue.hxx \
-    headers/new_account_dialogue.hxx \
-    headers/password_generator_dialogue.hxx
+    headers/main_window_dialogue.hxx
 
 FORMS += \
-    uis/settings_dialogue.ui \
-    uis/save_file_dialogue.ui \
-    uis/load_file_dialogue.ui \
     uis/main_window_dialogue.ui \
-    uis/new_account_dialogue.ui \
-    uis/password_generator_dialogue.ui
 
 RC_ICONS += ./resources/LSPM.ico
 

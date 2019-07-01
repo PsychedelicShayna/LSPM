@@ -18,88 +18,8 @@
     <normaloff>.</normaloff>.</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout_Main" stretch="0,10,0">
-      <item>
-       <layout class="QVBoxLayout" name="vLayout_Buttons">
-        <item>
-         <widget class="QPushButton" name="pushButton_CreateAccount">
-          <property name="text">
-           <string>Create Account</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButton_DeleteAccount">
-          <property name="text">
-           <string>Delete Account</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="hLayout_ListViews">
-        <item>
-         <widget class="QListWidget" name="listWidget_Accounts">
-          <property name="selectionRectVisible">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QListWidget" name="listWidget_Keys"/>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="hLayout_Filters">
-        <item>
-         <widget class="QLineEdit" name="lineEdit_AccountFilter"/>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLineEdit" name="lineEdit_SelectedKeyValue"/>
-    </item>
-   </layout>
+   <layout class="QGridLayout" name="gridLayout"/>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>504</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="defaultUp">
-    <bool>false</bool>
-   </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="action_Save"/>
-    <addaction name="action_SaveAs"/>
-    <addaction name="action_Load"/>
-    <addaction name="separator"/>
-   </widget>
-   <widget class="QMenu" name="menuOther">
-    <property name="title">
-     <string>Other</string>
-    </property>
-    <addaction name="action_PasswordGenerator"/>
-    <addaction name="separator"/>
-    <addaction name="action_Settings"/>
-   </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuOther"/>
-  </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionTest">
    <property name="text">
     <string>Test</string>
