@@ -1,5 +1,6 @@
 /*
 !PasswordManager/
 !screenshots/
-**/.DS_Store
+!source/
+*.DS_Store
 **~

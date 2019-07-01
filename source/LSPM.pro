@@ -20,37 +20,37 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++17
 
 SOURCES += \
-    source/main.cxx \
-    source/wallet.cxx \
-    source/basic_aes.cxx \
-    source/settings_dialogue.cxx \
-    source/password_generator.cxx \
-    source/save_file_dialogue.cxx \
-    source/load_file_dialogue.cxx \
-    source/main_window_dialogue.cxx \
-    source/new_account_dialogue.cxx \
-    source/password_generator_dialogue.cxx
+    main.cxx \
+    wallet.cxx \
+    basic_aes.cxx \
+    settings_dialogue.cxx \
+    password_generator.cxx \
+    save_file_dialogue.cxx \
+    load_file_dialogue.cxx \
+    main_window_dialogue.cxx \
+    new_account_dialogue.cxx \
+    password_generator_dialogue.cxx
 
 HEADERS += \
-    source/headers/json.hxx \
-    source/headers/macros.hxx \
-    source/headers/wallet.hxx \
-    source/headers/basic_aes.hxx \
-    source/headers/settings_dialogue.hxx \
-    source/headers/save_file_dialogue.hxx \
-    source/headers/password_generator.hxx \
-    source/headers/load_file_dialogue.hxx \
-    source/headers/main_window_dialogue.hxx \
-    source/headers/new_account_dialogue.hxx \
-    source/headers/password_generator_dialogue.hxx
+    headers/json.hxx \
+    headers/macros.hxx \
+    headers/wallet.hxx \
+    headers/basic_aes.hxx \
+    headers/settings_dialogue.hxx \
+    headers/save_file_dialogue.hxx \
+    headers/password_generator.hxx \
+    headers/load_file_dialogue.hxx \
+    headers/main_window_dialogue.hxx \
+    headers/new_account_dialogue.hxx \
+    headers/password_generator_dialogue.hxx
 
 FORMS += \
-    source/uis/settings_dialogue.ui \
-    source/uis/save_file_dialogue.ui \
-    source/uis/load_file_dialogue.ui \
-    source/uis/main_window_dialogue.ui \
-    source/uis/new_account_dialogue.ui \
-    source/uis/password_generator_dialogue.ui
+    uis/settings_dialogue.ui \
+    uis/save_file_dialogue.ui \
+    uis/load_file_dialogue.ui \
+    uis/main_window_dialogue.ui \
+    uis/new_account_dialogue.ui \
+    uis/password_generator_dialogue.ui
 
 RC_ICONS += ./resources/LSPM.ico
 
