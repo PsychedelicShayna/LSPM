@@ -1,7 +1,7 @@
 #include "headers/main_dlg.hxx"
 #include "ui_main_dlg.h"
 
-bool MainWindow::spawnTextPrompt(const QString& message, QString* output) {
+bool MainWindow::spawnTextPrompt(const QString& message, QString* output, bool password=false) {
     // The actual dialog object that will prompt the user for text.
     QDialog* dialog = new QDialog(this);
 
@@ -20,6 +20,10 @@ bool MainWindow::spawnTextPrompt(const QString& message, QString* output) {
 
     QLineEdit* prompt_line_edit = new QLineEdit(dialog);
     prompt_line_edit->setFont(QFont("Menlo"));
+
+    if(password) {
+        prompt_line_edit->setEchoMode(QLineEdit::Password);
+    }
 
     QPushButton* okay_button = new QPushButton("Okay", dialog);
     okay_button->setFont(QFont("Menlo"));
@@ -413,10 +417,9 @@ void MainWindow::saveVaultAs() {
         output_stream.close();
     }
 }
-void MainWindow::openVault() {
-    const std::string& load_path = QFileDialog::getOpenFileName(this, "Load Vault", "", "Vaults (*.vlt *.vault)").toStdString();
 
-    std::ifstream input_stream(load_path, std::ios::binary);
+void MainWindow::parseVault(const QString& load_path) {
+    std::ifstream input_stream(load_path.toStdString(), std::ios::binary);
     if(input_stream.good()) {
         std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(input_stream)), (std::istreambuf_iterator<char>()));
         input_stream.close();
@@ -430,12 +433,12 @@ void MainWindow::openVault() {
                 Json::parse(json_data);
                 deserializeAccounts(QString::fromStdString(json_data));
 
-                lastVaultPath = QString::fromStdString(load_path);
+                lastVaultPath = load_path;
                 ui->saveButton->setEnabled(true);
                 break;
             } catch(const Json::exception&) {
                 QString submitted_text;
-                if(spawnTextPrompt("Parsing exception. The vault is probably encrypted (or corrupted). Please enter your encryption key.", &submitted_text)) {
+                if(spawnTextPrompt("Parsing exception. The vault is probably encrypted (or corrupted). Please enter your encryption key.", &submitted_text, true)) {
                     const std::string& plain_key = submitted_text.toStdString();
                     bytes = Crypto::Aes256CbcAutoDecrypt(bytes, plain_key);
 
@@ -449,6 +452,10 @@ void MainWindow::openVault() {
     } else {
         QMessageBox::critical(this, "Error!", "There was an error opening the file. The stream reported bad.");
     }
+}
+void MainWindow::openVault() {
+    const QString& load_path = QFileDialog::getOpenFileName(this, "Load Vault", "", "Vaults (*.vlt *.vault)");
+    parseVault(load_path);
 }
 
 void MainWindow::spawnGenerator() {
@@ -512,6 +519,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // Attempts to load style.qss in the current directory.
     LoadStylesheet("./style.qss");
+
+    // Attempt to load the startup vault in current directory (primary.vlt).
+    std::ifstream input_stream("./primary.vlt", std::ios::binary);
+    if(input_stream.good()) {
+        input_stream.close();
+        parseVault("./primary.vlt");
+    }
 
     // Disables the save button by default, until it's re-enabled by the open method after a vault has been loaded.
     ui->saveButton->setEnabled(false);

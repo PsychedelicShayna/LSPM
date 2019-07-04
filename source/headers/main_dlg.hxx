@@ -56,7 +56,7 @@ private:
      * will be written to. The return value indicates whether
      * or not the input was confirmed (true) or if the dialog
      * was simply closed (false). */
-    bool spawnTextPrompt(const QString&, QString*);
+    bool spawnTextPrompt(const QString&, QString*, bool);
 
     /* Collects a range of variables from a container that exposes no
      * iterator, but does expose its element count, and a way to access
@@ -120,7 +120,9 @@ private slots:
     // Slots for the main navigation buttons.
     void saveVault();
     void saveVaultAs();
+    void parseVault(const QString&);
     void openVault();
+
     void spawnGenerator();
 
     /* Account search slot. Performs a search with the given QString.
