@@ -282,21 +282,21 @@ void MainWindow::copyEntryValue() {
 }
 
 void MainWindow::saveVault() {
-    const std::string& output_path = last_vault_path.toStdString();
+    const std::string& output_path = lastVaultPath.toStdString();
 
     std::ofstream output_stream(output_path, std::ios::binary);
     if(output_stream.good()) {
         const std::string& serialized_string = serializeAccounts().toStdString();
         std::vector<uint8_t> bytes_to_write(serialized_string.begin(), serialized_string.end());
 
-        if(last_vault_encrypted) {
-            bytes_to_write = Crypto::Aes256CbcAutoEncrypt(bytes_to_write, last_vault_key.toStdString());
+        if(lastVaultEncrypted) {
+            bytes_to_write = Crypto::Aes256CbcAutoEncrypt(bytes_to_write, lastVaultKey.toStdString());
         }
 
         output_stream.write(reinterpret_cast<char*>(bytes_to_write.data()), static_cast<std::streamsize>(bytes_to_write.size()));
         output_stream.close();
 
-        QMessageBox::information(this, "Vault saved", last_vault_encrypted ? "The vault has been encrypted and saved." : "The vault has been saved.");
+        QMessageBox::information(this, "Vault saved", lastVaultEncrypted ? "The vault has been encrypted and saved." : "The vault has been saved.");
     } else {
         QMessageBox::critical(this, "Error!", "There was an error opening the file. The stream reported bad.");
     }
@@ -338,7 +338,7 @@ void MainWindow::openVault() {
         input_stream.close();
 
         ui->saveButton->setEnabled(false);
-        last_vault_encrypted = false;
+        lastVaultEncrypted = false;
 
         while(true) {
             try {
@@ -346,7 +346,7 @@ void MainWindow::openVault() {
                 Json::parse(json_data);
                 deserializeAccounts(QString::fromStdString(json_data));
 
-                last_vault_path = QString::fromStdString(load_path);
+                lastVaultPath = QString::fromStdString(load_path);
                 ui->saveButton->setEnabled(true);
                 break;
             } catch(const Json::exception&) {
@@ -355,8 +355,8 @@ void MainWindow::openVault() {
                     const std::string& plain_key = submitted_text.toStdString();
                     bytes = Crypto::Aes256CbcAutoDecrypt(bytes, plain_key);
 
-                    last_vault_key = QString::fromStdString(plain_key);
-                    last_vault_encrypted = true;
+                    lastVaultKey = QString::fromStdString(plain_key);
+                    lastVaultEncrypted = true;
                 } else {
                     break;
                 }
@@ -368,7 +368,8 @@ void MainWindow::openVault() {
 }
 
 void MainWindow::spawnGenerator() {
-
+    PasswordGeneratorDialog* password_generator_dialog = new PasswordGeneratorDialog(this);
+    password_generator_dialog->show();
 }
 
 void MainWindow::accountSearch(QString new_text) {

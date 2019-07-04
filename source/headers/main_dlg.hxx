@@ -1,29 +1,40 @@
 #ifndef MAINWINDOW_HH
 #define MAINWINDOW_HH
 
+/* This is Qt's own private QSS parser. The reason this is included
+ * is because there is no native way using Qt's public API to validate
+ * a Qt Stylesheet. The private QSS parser contains a method that can
+ * be used to validate QSS. This is used by the LoadStylesheet method. */
 #include <private/qcssparser_p.h>
 
-#include <QDialogButtonBox>
+// Qt GUI Widgets.
 #include <QMainWindow>
-#include <QClipboard>
 #include <QListWidget>
 #include <QMessageBox>
 #include <QTreeWidget>
 #include <QFileDialog>
 #include <QTextEdit>
 #include <QLineEdit>
-#include <QString>
 #include <QLabel>
 #include <QMenu>
-#include <QPair>
-#include <QMap>
 
+// Qt datatypes.
+#include <QClipboard>
+#include <QString>
+
+// Standard I/O.
 #include <iostream>
 #include <fstream>
+
+// Standard datatypes.
 #include <string>
 #include <vector>
 
+// Crypto namespace, for basic cryptographic functions.
 #include "crypto.hxx"
+
+// Password generator dialog. This is ripped from my other repository: https://github.com/Shayna-x02/Password-Generator
+#include "generator_dlg.hxx"
 
 // Nlohmann's open source JSON library.
 #include "json.hxx"
@@ -63,16 +74,15 @@ private:
     }
 
     // Retains the last path that was used to load a vault.
-    QString last_vault_path;
+    QString lastVaultPath;
 
     // Retains the last plain key that was used to decrypt a vault.
-    QString last_vault_key;
+    QString lastVaultKey;
 
     // Retains whether or not the last vault loaded was encrypted or not.
-    bool last_vault_encrypted;
+    bool lastVaultEncrypted;
 
 private slots:
-
     /* Serializes the accountTree object into JSON, and
      * deserializes JSON into the accountTree object.
      *
@@ -97,16 +107,18 @@ private slots:
     void setEntryValue();
     void copyEntryValue();
 
-    //
+    // Slots for the main navigation buttons.
     void saveVault();
     void saveVaultAs();
     void openVault();
-
     void spawnGenerator();
 
+    /* Account search slot. Performs a search with the given QString.
+     * textChanged Signal from the search box is connected to this. */
     void accountSearch(QString);
 
 public:
+    // Attempts to load a stylesheet file, returns true if successful.
     bool LoadStylesheet(const std::string&);
 
     explicit MainWindow(QWidget* parent = nullptr);

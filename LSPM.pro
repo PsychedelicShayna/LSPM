@@ -9,21 +9,25 @@ CONFIG += c++17
 CONFIG(debug, debug|release):DEFINES += DEBUG
 CONFIG(release, debug|release):DEFINES += RELEASE
 
-# Icon used for application.
+# Icon used for the binary.
 RC_ICONS += resources/LSPM.ico
 
 SOURCES += \
     source/main.cxx \
     source/crypto.cxx \
-    source/main_dlg.cxx
+    source/main_dlg.cxx \
+    source/generator_dlg.cxx
 
 HEADERS += \
     source/headers/crypto.hxx \
     source/headers/json.hxx \
-    source/headers/main_dlg.hxx
+    source/headers/main_dlg.hxx \
+    source/headers/generator_dlg.hxx
 
 FORMS += \
-    source/uis/main_dlg.ui
+    source/uis/main_dlg.ui \
+    source/uis/generator_dlg.ui
+
 
 # Windows OpenSSL Setup.
 win32 {
