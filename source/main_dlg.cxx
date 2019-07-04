@@ -57,6 +57,49 @@ bool MainWindow::spawnTextPrompt(const QString& message, QString* output) {
     return submitted;
 }
 
+int32_t MainWindow::randomNumber(const int32_t& from, const int32_t& to) const {
+    static std::random_device device;
+    static std::mt19937 generator(device());
+
+    std::uniform_int_distribution<int32_t> uniform_distributer(from, to);
+
+    int32_t generated = uniform_distributer(generator);
+    return generated;
+}
+
+QString MainWindow::generatePassword(const uint32_t& length) const {
+    static const QString& uppercase_chars   =   "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static const QString& lowercase_chars   =   "abcdefghijklmnopqrstuvwxyz";
+    static const QString& decimal_chars     =   "1234567890";
+
+    QString generation_buffer;
+    generation_buffer.reserve(static_cast<int32_t>(length));
+
+    const uint32_t& characters_per_set = static_cast<uint32_t>(std::round(length/3));
+
+    for(uint32_t i=0; i<characters_per_set; ++i) {
+        const uint32_t& random_index = randomNumber(0, uppercase_chars.size()-1);
+        const QChar& random_character = uppercase_chars.at(random_index);
+        generation_buffer.push_back(random_character);
+    }
+
+    for(uint32_t i=0; i<characters_per_set; ++i) {
+        const uint32_t& random_index = randomNumber(0, lowercase_chars.size()-1);
+        const QChar& random_character = lowercase_chars.at(random_index);
+        generation_buffer.push_back(random_character);
+    }
+
+    for(uint32_t i=0; i<characters_per_set; ++i) {
+        const uint32_t& random_index = randomNumber(0, decimal_chars.size()-1);
+        const QChar& random_character = decimal_chars.at(random_index);
+        generation_buffer.push_back(random_character);
+    }
+
+    std::random_shuffle(generation_buffer.begin(), generation_buffer.end());
+
+    return generation_buffer;
+}
+
 QString MainWindow::serializeAccounts() const {
     Json json_representation;
 
@@ -113,7 +156,7 @@ void MainWindow::showAccountTreeContextMenu(const QPoint& relative_click_point) 
     context_menu.setFont(QFont("Menlo"));
 
     if(ui->accountTree->selectedItems().size() == 1) {
-        const QTreeWidgetItem* selected_item = ui->accountTree->selectedItems().at(0);
+        QTreeWidgetItem* selected_item = ui->accountTree->selectedItems().at(0);
 
         // Top level items (accounts) have no parent set, while child items (entries) do.
         if(selected_item->parent() == nullptr) {
@@ -124,11 +167,40 @@ void MainWindow::showAccountTreeContextMenu(const QPoint& relative_click_point) 
         } else {
             context_menu.addAction("Rename entry", this, SLOT(renameEntry()));
             context_menu.addAction("Delete entry", this, SLOT(deleteEntry()));
+
             context_menu.addSeparator();
+
             context_menu.addAction("Set value", this, SLOT(setEntryValue()));
             context_menu.addAction("Copy value", this, SLOT(copyEntryValue()));
-        }
 
+            context_menu.addSeparator();
+
+            QMenu* generator_menu = context_menu.addMenu("Generate Password");
+
+            generator_menu->addAction("12 Characters", [this, &selected_item](){
+                selected_item->setText(1, generatePassword(12));
+            });
+
+            generator_menu->addAction("24 Characters", this, [this, &selected_item](){
+                selected_item->setText(1, generatePassword(24));
+            });
+
+            generator_menu->addAction("48 Characters", this, [this, &selected_item](){
+                selected_item->setText(1, generatePassword(48));
+            });
+
+            generator_menu->addAction("96 Characters", this, [this, &selected_item](){
+                selected_item->setText(1, generatePassword(96));
+            });
+
+            generator_menu->addAction("192 Characters", this, [this, &selected_item](){
+                selected_item->setText(1, generatePassword(192));
+            });
+
+            generator_menu->addAction("384 Characters", this, [this, &selected_item](){
+                selected_item->setText(1, generatePassword(384));
+            });
+        }
     } else if (ui->accountTree->selectedItems().size() > 1) {
         const auto& selected_items = ui->accountTree->selectedItems();
 
@@ -279,6 +351,18 @@ void MainWindow::copyEntryValue() {
 
     QClipboard* global_clipboard = QApplication::clipboard();
     global_clipboard->setText(selected_entry_value);
+}
+
+void MainWindow::on_accountTree_itemDoubleClicked(QTreeWidgetItem* item, int column) {
+    if(item->parent() && column == 1) {
+        item->setFlags(item->flags() | Qt::ItemIsEditable);
+        ui->accountTree->editItem(item, 1);
+        item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+    } else if(item->parent()) {
+        renameEntry();
+    } else {
+        renameAccount();
+    }
 }
 
 void MainWindow::saveVault() {

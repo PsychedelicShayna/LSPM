@@ -27,6 +27,7 @@
 #include <fstream>
 
 // Standard datatypes.
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -73,6 +74,12 @@ private:
         return collected;
     }
 
+    // A simple wrapper around the standard Mersenne Twister implementation to simplify random number generation.
+    int32_t randomNumber(const int32_t&, const int32_t&) const;
+
+    // Generates a password composed of uppercase, lowercase, and decimal characters with the specified length.
+    QString generatePassword(const uint32_t&) const;
+
     // Retains the last path that was used to load a vault.
     QString lastVaultPath;
 
@@ -81,6 +88,7 @@ private:
 
     // Retains whether or not the last vault loaded was encrypted or not.
     bool lastVaultEncrypted;
+
 
 private slots:
     /* Serializes the accountTree object into JSON, and
@@ -106,6 +114,8 @@ private slots:
     void renameEntry();
     void setEntryValue();
     void copyEntryValue();
+
+    void on_accountTree_itemDoubleClicked(QTreeWidgetItem*, int);
 
     // Slots for the main navigation buttons.
     void saveVault();
