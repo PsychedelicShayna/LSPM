@@ -159,13 +159,14 @@ void MainWindow::showAccountTreeContextMenu(const QPoint& relative_click_point) 
     QMenu context_menu(this);
     context_menu.setFont(QFont("Menlo"));
 
+    context_menu.addAction("Create account", this, SLOT(createAccount()));
+    context_menu.addSeparator();
+
     if(ui->accountTree->selectedItems().size() == 1) {
         QTreeWidgetItem* selected_item = ui->accountTree->selectedItems().at(0);
 
         // Top level items (accounts) have no parent set, while child items (entries) do.
         if(selected_item->parent() == nullptr) {
-            context_menu.addAction("Create account", this, SLOT(createAccount()));
-            context_menu.addSeparator();
             context_menu.addAction("Rename account", this, SLOT(renameAccount()));
             context_menu.addAction("Delete account", this, SLOT(deleteAccount()));
             context_menu.addSeparator();
