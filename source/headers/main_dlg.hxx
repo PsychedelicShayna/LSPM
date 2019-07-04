@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_HH
 #define MAINWINDOW_HH
 
+#include <private/qcssparser_p.h>
+
 #include <QDialogButtonBox>
 #include <QMainWindow>
 #include <QClipboard>
@@ -21,7 +23,6 @@
 #include <string>
 #include <vector>
 
-#include "password_generator_dialog.hxx"
 #include "crypto.hxx"
 
 // Nlohmann's open source JSON library.

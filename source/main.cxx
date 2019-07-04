@@ -4,7 +4,7 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 
-#include "headers/main_window_dialog.hxx"
+#include "headers/main_dlg.hxx"
 
 
 int main(int argc, char** argv) {

@@ -1,5 +1,5 @@
-#include "headers/main_window_dialog.hxx"
-#include "ui_main_window_dialogue.h"
+#include "headers/main_dlg.hxx"
+#include "ui_main_dlg.h"
 
 bool MainWindow::spawnTextPrompt(const QString& message, QString* output) {
     // The actual dialog object that will prompt the user for text.
@@ -377,8 +377,7 @@ void MainWindow::open() {
 }
 
 void MainWindow::spawnGenerator() {
-    PasswordGeneratorDialog* password_generator_dialog = new PasswordGeneratorDialog(this);
-    password_generator_dialog->show();
+
 }
 
 void MainWindow::on_searchBar_textChanged(QString new_text) {

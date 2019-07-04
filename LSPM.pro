@@ -1,61 +1,48 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2019-03-13T22:09:15
-#
-#-------------------------------------------------
-
-QT += core gui gui-private
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += core widgets gui gui-private
 
 TARGET = LSPM
 TEMPLATE = app
 
-QMAKE_CXXF
-
-# QMAKE_LIBS_CORE = kernel32.lib user32.lib shell32.lib uuid.lib ole32.lib advapi32.lib ws2_32.lib
-
-DEFINES += QT_DEPRECATED_WARNINGS
-
 CONFIG += c++17
 
+# Defines DEBUG/RELEASE macro, depending on the build mode.
+CONFIG(debug, debug|release):DEFINES += DEBUG
+CONFIG(release, debug|release):DEFINES += RELEASE
+
+# Icon used for application.
+RC_ICONS += resources/LSPM.ico
+
 SOURCES += \
-    crypto.cxx \
-    main.cxx \
-    main_window_dialog.cxx \
-    password_generator_dialog.cxx
+    source/main.cxx \
+    source/crypto.cxx \
+    source/main_dlg.cxx
 
 HEADERS += \
-    headers/main_window_dialog.hxx \
-    headers/password_generator_dialog.hxx \
-    headers/crypto.hxx \
-    headers/json.hxx
+    source/headers/crypto.hxx \
+    source/headers/json.hxx \
+    source/headers/main_dlg.hxx
 
 FORMS += \
-    uis/load_safe_dialogue.ui \
-    uis/main_window_dialog.ui \
-    uis/password_generator_dialog.ui
+    source/uis/main_dlg.ui
 
-RC_ICONS += ./resources/LSPM.ico
+# Windows OpenSSL Setup.
+win32 {
+    # OpenSSL Include directory.
+    INCLUDEPATH += C:/OpenSSL-Win64/include/
+    DEPENDPATH += C:/OpenSSL-Win64/include/
 
-# Add debug/release macros depending on the build mode.
-win32:CONFIG(debug, debug|release):  DEFINES += DEBUG
-else:win32:CONFIG(release, debug|release):  DEFINES += RELEASE
+    # Separate Windows libraries that OpenSSL requires to link properly.
+    LIBS += -lUser32 -lAdvapi32
 
-# ====================================================================================================
-#       OpenSSL Library Importation
-# ====================================================================================================
-INCLUDEPATH += C:/OpenSSL-Win64/include/
-DEPENDPATH += C:/OpenSSL-Win64/include/
+    # OpenSSL Library directory.
+    LIBS += -LC:/OpenSSL-Win64/lib/VC/static/
 
-LIBS += -LC:/OpenSSL-Win64/lib/VC/static/
-LIBS += -lUser32 -lAdvapi32
+    # OpenSSL Static library linkage (debug/release).
+    CONFIG(release, debug|release): LIBS += -llibcrypto64MD
+    CONFIG(debug, debug|release): LIBS += -llibcrypto64MDd
+}
 
-win32:CONFIG(release, debug|release): LIBS += -llibcrypto64MD
-else:win32:CONFIG(debug, debug|release): LIBS += -llibcrypto64MDd
-# ====================================================================================================
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+# Mac OpenSSL Setup.
+macx {
+    # To-Do
+}
