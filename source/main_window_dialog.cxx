@@ -1,0 +1,453 @@
+#include "headers/main_window_dialog.hxx"
+#include "ui_main_window_dialogue.h"
+
+bool MainWindow::spawnTextPrompt(const QString& message, QString* output) {
+    // The actual dialog object that will prompt the user for text.
+    QDialog* dialog = new QDialog(this);
+
+    // Sets a flag that delets the dialog from the heap as soon as it's closed.
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    // Makes the dialog window non-resizable.
+    dialog->setWindowFlags(dialog->windowFlags() | Qt::MSWindowsFixedSizeDialogHint);
+
+    // The layout which will contain all of the Ui elements.
+    QVBoxLayout* layout = new QVBoxLayout(dialog);
+
+    // Create a new label, lineEdit, and pushBUtton with the dialog as the parent.
+    QLabel* message_label = new QLabel(message, dialog); // The message argument is passed, to display the message by default.
+    message_label->setFont(QFont("Menlo"));
+
+    QLineEdit* prompt_line_edit = new QLineEdit(dialog);
+    prompt_line_edit->setFont(QFont("Menlo"));
+
+    QPushButton* okay_button = new QPushButton("Okay", dialog);
+    okay_button->setFont(QFont("Menlo"));
+
+    // Add the newly created Ui elements to the verical layout.
+    layout->addWidget(message_label);
+    layout->addWidget(prompt_line_edit);
+    layout->addWidget(okay_button);
+
+    // Assigns the newly constructed layout to the dialog.
+    dialog->setLayout(layout);
+
+    /* This will be assigned to the text that was entered, assuming okay was clicked,
+     * otherwise it will remain uninitialized. The reason for making a separate
+     * variable rather than just reading from the QLineEdit at the end, is because
+     * of the flag that was set earlier that deletes the dialog from the heap the
+     * moment it is closed, and as the okay button triggers the close event, by the
+     * time the dialog is closed, the QLineEdit would have been deleted. */
+    QString submitted_text;
+
+    bool submitted = false; // If this remains false, okay was never pressed, the dialog just closed.
+
+    // Connects the "clicked" signal from the okay button, to this lambda.
+    QObject::connect(okay_button, &QPushButton::clicked, [&](){
+        submitted = true; // Indicates that okay was indeed pressed.
+        submitted_text = prompt_line_edit->text(); // Gets the entered text, and stores it in submitted_text.
+        dialog->close();
+    });
+
+    // Unlike show(), exec() executes synchronously.
+    dialog->exec();
+
+    if(submitted) *output = submitted_text;
+
+    return submitted;
+}
+QString MainWindow::generateSequentialName(const QString& blueprint, std::function<bool(const QString&)> check) {
+    QString generated_name = blueprint.arg(0);
+
+    for(int32_t i=1; check(generated_name); ++i) {
+        generated_name = blueprint.arg(i);
+    }
+
+    return generated_name;
+}
+
+QString MainWindow::serializeAccounts() const {
+    Json json_representation;
+
+    int32_t account_count = ui->accountTree->topLevelItemCount();
+
+    const auto& accounts = collect<QTreeWidgetItem*>(account_count, [this](int32_t i) {
+        return ui->accountTree->topLevelItem(i);
+    });
+
+    for(const auto& account : accounts) {
+        const QString& account_name = account->text(0);
+        json_representation[account_name.toStdString()] = {};
+
+        const int32_t entry_count = account->childCount();
+
+        const auto& entries = collect<QTreeWidgetItem*>(entry_count, [&account](int32_t i ){
+            return account->child(i);
+        });
+
+        for(const auto& entry : entries) {
+            const QString& entry_name = entry->text(0);
+            const QString& entry_value = entry->text(1);
+
+            json_representation[account_name.toStdString()][entry_name.toStdString()] = entry_value.toStdString();
+        }
+    }
+
+    return QString::fromStdString(json_representation.dump(1, ' '));
+}
+void MainWindow::deserializeAccounts(const QString& serialized_json) {
+    const Json& json = Json::parse(serialized_json.toStdString());
+
+    ui->accountTree->clear();
+
+    for(const auto& account_object : json.items()) {
+        QTreeWidgetItem* account = new QTreeWidgetItem;
+        account->setText(0, QString::fromStdString(account_object.key()));
+
+        for(const auto& entry_object : account_object.value().items()) {
+            QTreeWidgetItem* entry = new QTreeWidgetItem;
+            entry->setText(0, QString::fromStdString(entry_object.key()));
+            entry->setText(1, QString::fromStdString(entry_object.value()));
+            account->addChild(entry);
+        }
+
+        ui->accountTree->addTopLevelItem(account);
+    }
+}
+
+void MainWindow::showAccountTreeContextMenu(const QPoint& relative_click_point) {
+    const QPoint& global_click_point = ui->accountTree->mapToGlobal(relative_click_point);
+
+    QMenu context_menu(this);
+    context_menu.setFont(QFont("Menlo"));
+
+    if(ui->accountTree->selectedItems().size() == 1) {
+        const QTreeWidgetItem* selected_item = ui->accountTree->selectedItems().at(0);
+
+        // Top level items (accounts) have no parent set, while child items (entries) do.
+        if(selected_item->parent() == nullptr) {
+            context_menu.addAction("Rename account", this, SLOT(renameAccount()));
+            context_menu.addAction("Delete account", this, SLOT(deleteAccount()));
+            context_menu.addSeparator();
+            context_menu.addAction("Create entry", this, SLOT(createEntry()));
+        } else {
+            context_menu.addAction("Rename entry", this, SLOT(renameEntry()));
+            context_menu.addAction("Delete entry", this, SLOT(deleteEntry()));
+            context_menu.addSeparator();
+            context_menu.addAction("Set value", this, SLOT(setEntryValue()));
+            context_menu.addAction("Copy value", this, SLOT(copyEntryValue()));
+        }
+
+    } else if (ui->accountTree->selectedItems().size() > 1) {
+        const auto& selected_items = ui->accountTree->selectedItems();
+
+        if(std::all_of(selected_items.begin(), selected_items.end(), [](QTreeWidgetItem* item){return item->parent();})) {
+            context_menu.addAction("Delete entries", this, SLOT(deleteEntry()));
+        } else if (std::none_of(selected_items.begin(), selected_items.end(), [](QTreeWidgetItem* item){return item->parent();})) {
+            context_menu.addAction("Delete accounts", this, SLOT(deleteAccount()));
+        }
+    } else{
+        context_menu.addAction("Create account", this, SLOT(createAccount()));
+    }
+
+    context_menu.exec(global_click_point);
+}
+
+void MainWindow::createAccount() {
+    QString new_account_name;
+
+    for(;;) {
+        bool submitted = spawnTextPrompt("Enter the name for the new account.", &new_account_name);
+
+        if(submitted) {
+            const auto& matches = ui->accountTree->findItems(new_account_name, Qt::MatchExactly);
+
+            bool duplictae = std::any_of(matches.begin(), matches.end(), [&](QTreeWidgetItem* item){
+                return !item->parent();
+            });
+
+            if(duplictae) {
+                QMessageBox::warning(this, "Error!", "An account with that name already exists.");
+            } else {
+                break;
+            }
+        } else {
+            return;
+        }
+    }
+
+    QTreeWidgetItem* new_account= new QTreeWidgetItem;
+    new_account->setText(0, new_account_name);
+    ui->accountTree->addTopLevelItem(new_account);
+}
+void MainWindow::deleteAccount() {
+    for(const auto& item : ui->accountTree->selectedItems()) {
+        delete item;
+    }
+}
+void MainWindow::renameAccount() {
+    QTreeWidgetItem* selected_account = ui->accountTree->selectedItems().at(0);
+    QString new_account_name;
+
+    while(true) {
+        bool submitted = spawnTextPrompt("Enter the new name of the account.", &new_account_name);
+
+        if(submitted) {
+            bool duplicate = ui->accountTree->findItems(new_account_name, Qt::MatchExactly).size();
+
+            if(duplicate) {
+                QMessageBox::warning(this, "Error!", "An account with that name already exists.");
+            } else {
+                selected_account->setText(0, new_account_name);
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+}
+
+void MainWindow::createEntry() {
+    QTreeWidgetItem* selected_account = ui->accountTree->selectedItems().at(0);
+
+    QString new_entry_name;
+
+    while(true) {
+        bool submitted = spawnTextPrompt("Enter the name of the new entry.", &new_entry_name);
+
+        if(submitted) {
+            const auto& children = collect<QTreeWidgetItem*>(selected_account->childCount(), [&selected_account](int32_t i) {
+                return selected_account->child(i);
+            });
+
+            bool duplicate = std::any_of(children.begin(), children.end(), [&new_entry_name](QTreeWidgetItem* item){
+                return item->text(0) == new_entry_name;
+            });
+
+            if(duplicate) {
+                 QMessageBox::warning(this, "Error!", "An entry with that name already exists.");
+            } else {
+                QTreeWidgetItem* new_entry = new QTreeWidgetItem;
+                new_entry->setText(0, new_entry_name);
+                selected_account->addChild(new_entry);
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+}
+void MainWindow::deleteEntry() {
+    for(const auto& item : ui->accountTree->selectedItems()) {
+        if(item->parent()) delete item;
+    }
+}
+void MainWindow::renameEntry() {
+    QTreeWidgetItem* selected_entry = ui->accountTree->selectedItems().at(0);
+
+    const QTreeWidgetItem* parent = selected_entry->parent();
+
+    if(selected_entry->parent()) {
+        const auto& children = collect<QTreeWidgetItem*>(parent->childCount(), [&parent](int32_t i) {
+            return parent->child(i);
+        });
+
+        QString new_entry_name;
+
+        while(true) {
+            bool submitted = spawnTextPrompt("Enter the new name of the entry.", &new_entry_name);
+            if(submitted) {
+                bool duplicate = std::any_of(children.begin(), children.end(), [&new_entry_name](QTreeWidgetItem* child){
+                    return child->text(0) == new_entry_name;
+                });
+
+                if(duplicate) {
+                    QMessageBox::warning(this, "Error!", "An entry with that name already exists.");
+                } else {
+                    selected_entry->setText(0, new_entry_name);
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+}
+void MainWindow::setEntryValue() {
+    QTreeWidgetItem* selected_entry = ui->accountTree->selectedItems().at(0);
+
+    if(selected_entry->parent()) {
+        selected_entry->setFlags(selected_entry->flags() | Qt::ItemIsEditable);
+        ui->accountTree->editItem(selected_entry, 1);
+        selected_entry->setFlags(selected_entry->flags() ^ Qt::ItemIsEditable);
+    }
+}
+void MainWindow::copyEntryValue() {
+    const QTreeWidgetItem* selected_entry = ui->accountTree->selectedItems().at(0);
+    const QString& selected_entry_value = selected_entry->text(1);
+
+    QClipboard* global_clipboard = QApplication::clipboard();
+    global_clipboard->setText(selected_entry_value);
+}
+
+void MainWindow::save() {
+    const std::string& output_path = last_vault_path.toStdString();
+
+    std::ofstream output_stream(output_path, std::ios::binary);
+    if(output_stream.good()) {
+        const std::string& serialized_string = serializeAccounts().toStdString();
+        std::vector<uint8_t> bytes_to_write(serialized_string.begin(), serialized_string.end());
+
+        if(last_vault_encrypted) {
+            bytes_to_write = Crypto::Aes256CbcAutoEncrypt(bytes_to_write, last_vault_key.toStdString());
+        }
+
+        output_stream.write(reinterpret_cast<char*>(bytes_to_write.data()), static_cast<std::streamsize>(bytes_to_write.size()));
+        output_stream.close();
+
+        QMessageBox::information(this, "Vault saved", last_vault_encrypted ? "The vault has been encrypted and saved." : "The vault has been saved.");
+    } else {
+        QMessageBox::critical(this, "Error!", "There was an error opening the file. The stream reported bad.");
+    }
+}
+void MainWindow::saveAs() {
+    const std::string& serialized_string = serializeAccounts().toStdString();
+
+    std::vector<uint8_t> bytes_to_write(serialized_string.begin(), serialized_string.end());
+
+    while(true) {
+        if(QMessageBox::question(this, "Save Vault", "Use AES-256 encryption?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+            QString submitted_text;
+
+            if(spawnTextPrompt("Enter the password you want to use to encrypt this vault.", &submitted_text)) {
+                const std::string& plain_key = submitted_text.toStdString();
+                bytes_to_write = Crypto::Aes256CbcAutoEncrypt(bytes_to_write, plain_key);
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+
+    const std::string& save_path = QFileDialog::getSaveFileName(this, "Save Vault", "", "Vaults (*.vlt *.vault)").toStdString();
+
+    std::ofstream output_stream(save_path, std::ios::binary);
+
+    if(output_stream.good()) {
+        output_stream.write(reinterpret_cast<const char*>(bytes_to_write.data()), static_cast<std::streamsize>(bytes_to_write.size()));
+        output_stream.close();
+    }
+}
+void MainWindow::open() {
+    const std::string& load_path = QFileDialog::getOpenFileName(this, "Load Vault", "", "Vaults (*.vlt *.vault)").toStdString();
+
+    std::ifstream input_stream(load_path, std::ios::binary);
+    if(input_stream.good()) {
+        std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(input_stream)), (std::istreambuf_iterator<char>()));
+        input_stream.close();
+
+        ui->saveButton->setEnabled(false);
+        last_vault_encrypted = false;
+
+        while(true) {
+            try {
+                const std::string json_data(bytes.begin(), bytes.end());
+                Json::parse(json_data);
+                deserializeAccounts(QString::fromStdString(json_data));
+
+                last_vault_path = QString::fromStdString(load_path);
+                ui->saveButton->setEnabled(true);
+                break;
+            } catch(const Json::exception&) {
+                QString submitted_text;
+                if(spawnTextPrompt("Parsing exception. The vault is probably encrypted (or corrupted). Please enter your encryption key.", &submitted_text)) {
+                    const std::string& plain_key = submitted_text.toStdString();
+                    bytes = Crypto::Aes256CbcAutoDecrypt(bytes, plain_key);
+
+                    last_vault_key = QString::fromStdString(plain_key);
+                    last_vault_encrypted = true;
+                } else {
+                    break;
+                }
+            }
+        }
+    } else {
+        QMessageBox::critical(this, "Error!", "There was an error opening the file. The stream reported bad.");
+    }
+}
+
+void MainWindow::spawnGenerator() {
+    PasswordGeneratorDialog* password_generator_dialog = new PasswordGeneratorDialog(this);
+    password_generator_dialog->show();
+}
+
+void MainWindow::on_searchBar_textChanged(QString new_text) {
+    const int32_t item_count = ui->accountTree->topLevelItemCount();
+
+    const auto& accounts = collect<QTreeWidgetItem*>(item_count, [this](int32_t i){
+        return ui->accountTree->topLevelItem(i);
+    });
+
+    if(new_text.size()) {
+        for(const auto& account : accounts) {
+            if(!(account->text(0).contains(new_text, Qt::CaseInsensitive))) {
+                account->setHidden(true);
+            } else {
+                account->setHidden(false);
+            }
+        }
+    } else {
+        for(const auto& account : accounts) {
+            account->setHidden(false);
+        }
+    }
+}
+
+
+bool MainWindow::LoadStylesheet(const std::string& qstylesheet_path) {
+    std::ifstream input_stream(qstylesheet_path, std::ios::binary);
+
+    if(input_stream.good()) {
+        // Constructs a QString from an std::string that is being constructed with a start/end iterator of the input stream.
+        const QString& qss_string = QString::fromStdString(std::string(
+            (std::istreambuf_iterator<char>(input_stream)),
+            (std::istreambuf_iterator<char>())
+        ));
+
+        /* QCss::Parser/StyleSheet are both part of the private QtGui and QtCore libraries.
+         * There is no official public way to check the validity of a Qt StyleSheet. */
+        QCss::Parser qss_parser(qss_string);
+        QCss::StyleSheet stylesheet;
+
+        // If the parser returns true, the stylesheet is valid, and is applied, otherwise an error message is shown.
+        if(qss_parser.parse(&stylesheet)) {
+            setStyleSheet(qss_string);
+            return true;
+        } else {
+            QMessageBox::warning(this, "QStyleSheet parsing failure.",
+                "There was an error when trying to parse style.qss, verify that the QSS is valid, or delete the file to disable styling.");
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
+    ui->setupUi(this);
+    LoadStylesheet("./style.qss");
+
+    ui->saveButton->setEnabled(false);
+
+    ui->accountTree->setColumnWidth(0, 200);
+
+    connect(ui->accountTree, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showAccountTreeContextMenu(const QPoint&)));
+    connect(ui->generatorButton, SIGNAL(clicked()), this, SLOT(spawnGenerator()));
+    connect(ui->saveAsButton, SIGNAL(clicked()), this, SLOT(saveAs()));
+    connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(save()));
+    connect(ui->openButton, SIGNAL(clicked()), this, SLOT(open()));
+}
+
+MainWindow::~MainWindow() {
+    delete ui;
+}

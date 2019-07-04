@@ -4,30 +4,37 @@
 #
 #-------------------------------------------------
 
-QT += core gui
+QT += core gui gui-private
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Qt-UEPW
+TARGET = LSPM
 TEMPLATE = app
 
 QMAKE_CXXF
 
-QMAKE_LIBS_CORE = kernel32.lib user32.lib shell32.lib uuid.lib ole32.lib advapi32.lib ws2_32.lib
+# QMAKE_LIBS_CORE = kernel32.lib user32.lib shell32.lib uuid.lib ole32.lib advapi32.lib ws2_32.lib
 
 DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++17
 
 SOURCES += \
+    crypto.cxx \
     main.cxx \
-    main_window_dialogue.cxx
+    main_window_dialog.cxx \
+    password_generator_dialog.cxx
 
 HEADERS += \
-    headers/main_window_dialogue.hxx
+    headers/main_window_dialog.hxx \
+    headers/password_generator_dialog.hxx \
+    headers/crypto.hxx \
+    headers/json.hxx
 
 FORMS += \
-    uis/main_window_dialogue.ui \
+    uis/load_safe_dialogue.ui \
+    uis/main_window_dialog.ui \
+    uis/password_generator_dialog.ui
 
 RC_ICONS += ./resources/LSPM.ico
 
