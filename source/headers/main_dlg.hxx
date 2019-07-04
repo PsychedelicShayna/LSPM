@@ -46,11 +46,15 @@ private:
      * was simply closed (false). */
     bool spawnTextPrompt(const QString&, QString*);
 
-    /* Generates a sequential name, e.g. New File (1), New File (2), based on the supplied blueprint, e.g. New File(%1).
-     * The first argument is the blueprint, the second argument is a function used to determine whether or not the
-     * generated name is valid, or to continue incrementing. */
-    QString generateSequentialName(const QString&, std::function<bool(const QString&)>);
-
+    /* Collects a range of variables from a container that exposes no
+     * iterator, but does expose its element count, and a way to access
+     * a specific element, at a specific index.
+     *
+     * Here is an example with a vector (though you don't need to do this with a vector because it exposes iterators).
+     *
+     * const std::vector<int>& vector = {1, 2, 3, 4, 5};
+     * const QList<int>& collected = collect<int>(vector.size(), [&](int32_t i){return vector[i];});
+     */
     template<typename T>
     QList<T> collect(int32_t range, std::function<T(int32_t)> accessor) const {
         QList<T> collected;
@@ -58,14 +62,27 @@ private:
         return collected;
     }
 
+    // Retains the last path that was used to load a vault.
     QString last_vault_path;
+
+    // Retains the last plain key that was used to decrypt a vault.
     QString last_vault_key;
+
+    // Retains whether or not the last vault loaded was encrypted or not.
     bool last_vault_encrypted;
 
 private slots:
+
+    /* Serializes the accountTree object into JSON, and
+     * deserializes JSON into the accountTree object.
+     *
+     * This is used to load vault files, assuming they have
+     * already been decrypted, as vault files are simply JSON
+     * that represents the accountTree object. */
     QString serializeAccounts() const;
     void deserializeAccounts(const QString&);
 
+    // Slot that connects to the customContextMenuRequested signal from the account tree.
     void showAccountTreeContextMenu(const QPoint&);
 
     // Account C.R.U.D
@@ -80,13 +97,14 @@ private slots:
     void setEntryValue();
     void copyEntryValue();
 
-    void save();
-    void saveAs();
-    void open();
+    //
+    void saveVault();
+    void saveVaultAs();
+    void openVault();
 
     void spawnGenerator();
 
-    void on_searchBar_textChanged(QString);
+    void accountSearch(QString);
 
 public:
     bool LoadStylesheet(const std::string&);

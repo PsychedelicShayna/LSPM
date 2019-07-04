@@ -56,15 +56,6 @@ bool MainWindow::spawnTextPrompt(const QString& message, QString* output) {
 
     return submitted;
 }
-QString MainWindow::generateSequentialName(const QString& blueprint, std::function<bool(const QString&)> check) {
-    QString generated_name = blueprint.arg(0);
-
-    for(int32_t i=1; check(generated_name); ++i) {
-        generated_name = blueprint.arg(i);
-    }
-
-    return generated_name;
-}
 
 QString MainWindow::serializeAccounts() const {
     Json json_representation;
@@ -290,7 +281,7 @@ void MainWindow::copyEntryValue() {
     global_clipboard->setText(selected_entry_value);
 }
 
-void MainWindow::save() {
+void MainWindow::saveVault() {
     const std::string& output_path = last_vault_path.toStdString();
 
     std::ofstream output_stream(output_path, std::ios::binary);
@@ -310,7 +301,7 @@ void MainWindow::save() {
         QMessageBox::critical(this, "Error!", "There was an error opening the file. The stream reported bad.");
     }
 }
-void MainWindow::saveAs() {
+void MainWindow::saveVaultAs() {
     const std::string& serialized_string = serializeAccounts().toStdString();
 
     std::vector<uint8_t> bytes_to_write(serialized_string.begin(), serialized_string.end());
@@ -338,7 +329,7 @@ void MainWindow::saveAs() {
         output_stream.close();
     }
 }
-void MainWindow::open() {
+void MainWindow::openVault() {
     const std::string& load_path = QFileDialog::getOpenFileName(this, "Load Vault", "", "Vaults (*.vlt *.vault)").toStdString();
 
     std::ifstream input_stream(load_path, std::ios::binary);
@@ -380,7 +371,7 @@ void MainWindow::spawnGenerator() {
 
 }
 
-void MainWindow::on_searchBar_textChanged(QString new_text) {
+void MainWindow::accountSearch(QString new_text) {
     const int32_t item_count = ui->accountTree->topLevelItemCount();
 
     const auto& accounts = collect<QTreeWidgetItem*>(item_count, [this](int32_t i){
@@ -401,7 +392,6 @@ void MainWindow::on_searchBar_textChanged(QString new_text) {
         }
     }
 }
-
 
 bool MainWindow::LoadStylesheet(const std::string& qstylesheet_path) {
     std::ifstream input_stream(qstylesheet_path, std::ios::binary);
@@ -434,17 +424,27 @@ bool MainWindow::LoadStylesheet(const std::string& qstylesheet_path) {
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+
+    // Attempts to load style.qss in the current directory.
     LoadStylesheet("./style.qss");
 
+    // Disables the save button by default, until it's re-enabled by the open method after a vault has been loaded.
     ui->saveButton->setEnabled(false);
 
+    // Makes sure that there's a starting distance of 200 between the name/value columns in the account tree.
     ui->accountTree->setColumnWidth(0, 200);
 
+    // Connects the context menu requested signal from the account tree, to the show context menu slot.
     connect(ui->accountTree, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showAccountTreeContextMenu(const QPoint&)));
+
+    // Connects the text changed signal from the search bar, to the account search slot.
+    connect(ui->searchBar, SIGNAL(textChanged(QString)), this, SLOT(accountSearch(QString)));
+
+    // Connects the main top buttons to their respective slots.
     connect(ui->generatorButton, SIGNAL(clicked()), this, SLOT(spawnGenerator()));
-    connect(ui->saveAsButton, SIGNAL(clicked()), this, SLOT(saveAs()));
-    connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(save()));
-    connect(ui->openButton, SIGNAL(clicked()), this, SLOT(open()));
+    connect(ui->saveAsButton, SIGNAL(clicked()), this, SLOT(saveVaultAs()));
+    connect(ui->saveButton, SIGNAL(clicked()), this, SLOT(saveVault()));
+    connect(ui->openButton, SIGNAL(clicked()), this, SLOT(openVault()));
 }
 
 MainWindow::~MainWindow() {
