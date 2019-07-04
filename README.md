@@ -22,18 +22,14 @@ If you're struggling with manually compiling OpenSSL, you can find a [pre-built 
 ### Screenshots
 _These screenshots were taken with the [QtDark](https://github.com/EClaesson/QTDark) QSS stylesheet applied._
 
-**Main Dialogue**
+**Account Creation**
 
-![](screenshots/Image1.png?raw=true)
+![](screenshots/1.png?raw=true)
 
-**Account Creation Dialogue**
+**Entry Context Menu**
 
-![](screenshots/Image2.png?raw=true)
+![](screenshots/2.png?raw=true)
 
-**Account Loading Dialogue**
+**Password Generator Dialog**
 
-![](screenshots/Image3.png?raw=true)
-
-**Password Generator Dialogue** 
-
-![](screenshots/Image4.png?raw=true)
+![](screenshots/3.png?raw=true)
