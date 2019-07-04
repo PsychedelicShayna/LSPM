@@ -160,6 +160,8 @@ void MainWindow::showAccountTreeContextMenu(const QPoint& relative_click_point) 
 
         // Top level items (accounts) have no parent set, while child items (entries) do.
         if(selected_item->parent() == nullptr) {
+            context_menu.addAction("Create account", this, SLOT(createAccount()));
+            context_menu.addSeparator();
             context_menu.addAction("Rename account", this, SLOT(renameAccount()));
             context_menu.addAction("Delete account", this, SLOT(deleteAccount()));
             context_menu.addSeparator();
@@ -209,8 +211,6 @@ void MainWindow::showAccountTreeContextMenu(const QPoint& relative_click_point) 
         } else if (std::none_of(selected_items.begin(), selected_items.end(), [](QTreeWidgetItem* item){return item->parent();})) {
             context_menu.addAction("Delete accounts", this, SLOT(deleteAccount()));
         }
-    } else{
-        context_menu.addAction("Create account", this, SLOT(createAccount()));
     }
 
     context_menu.exec(global_click_point);
