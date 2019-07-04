@@ -1,6 +1,10 @@
 /*
 !PasswordManager/
 !screenshots/
+!resources/
 !source/
+
+!.gitignore
+!LSPM.pro
 *.DS_Store
 **~

@@ -1,9 +1,11 @@
 #include <QApplication>
+#include <QLayout>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QPushButton>
 
-#include <openssl/sha.h>
-#include <openssl/evp.h>
+#include "headers/main_dlg.hxx"
 
-#include "headers/main_window_dialogue.hxx"
 
 int main(int argc, char** argv) {
     QApplication application(argc, argv);
