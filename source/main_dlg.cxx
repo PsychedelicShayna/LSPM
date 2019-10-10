@@ -82,19 +82,19 @@ QString MainWindow::generatePassword(const uint32_t& length) const {
     const uint32_t& characters_per_set = static_cast<uint32_t>(std::round(length/3));
 
     for(uint32_t i=0; i<characters_per_set; ++i) {
-        const uint32_t& random_index = randomNumber(0, uppercase_chars.size()-1);
+        const int32_t& random_index = randomNumber(0, uppercase_chars.size()-1);
         const QChar& random_character = uppercase_chars.at(random_index);
         generation_buffer.push_back(random_character);
     }
 
     for(uint32_t i=0; i<characters_per_set; ++i) {
-        const uint32_t& random_index = randomNumber(0, lowercase_chars.size()-1);
+        const int32_t& random_index = randomNumber(0, lowercase_chars.size()-1);
         const QChar& random_character = lowercase_chars.at(random_index);
         generation_buffer.push_back(random_character);
     }
 
     for(uint32_t i=0; i<characters_per_set; ++i) {
-        const uint32_t& random_index = randomNumber(0, decimal_chars.size()-1);
+        const int32_t& random_index = randomNumber(0, decimal_chars.size()-1);
         const QChar& random_character = decimal_chars.at(random_index);
         generation_buffer.push_back(random_character);
     }
