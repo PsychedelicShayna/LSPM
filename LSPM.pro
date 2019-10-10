@@ -50,3 +50,12 @@ win32 {
 macx {
     # To-Do
 }
+
+# Linux OpenSSL Setup.
+unix {
+    INCLUDEPATH += /usr/src/openssl/include
+    DEPENDPATH += /usr/src/openssl/include
+
+    LIBS += -L/usr/lib/openssl/
+    LIBS += -lcrypto
+}
