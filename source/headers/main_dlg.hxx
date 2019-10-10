@@ -15,7 +15,9 @@
 #include <QFileDialog>
 #include <QTextEdit>
 #include <QLineEdit>
+#include <QScreen>
 #include <QLabel>
+#include <QRect>
 #include <QMenu>
 
 // Qt datatypes.

@@ -518,6 +518,11 @@ bool MainWindow::LoadStylesheet(const std::string& qstylesheet_path) {
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
+    QScreen* primary_screen = QGuiApplication::primaryScreen();
+    QRect primary_screen_geometry = primary_screen->geometry();
+
+    resize(primary_screen_geometry.width()/2, primary_screen_geometry.height()/2);
+
     // Attempts to load style.qss in the current directory.
     LoadStylesheet("./style.qss");
 
