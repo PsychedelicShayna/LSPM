@@ -523,14 +523,21 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     resize(primary_screen_geometry.width()/2, primary_screen_geometry.height()/2);
 
-    // Attempts to load style.qss in the current directory.
-    LoadStylesheet("./style.qss");
+    // Attempt to load and apply the main configuration file.
+    std::ifstream input_stream("./config.json", std::ios::binary);
 
-    // Attempt to load the startup vault in current directory (primary.vlt).
-    std::ifstream input_stream("./primary.vlt", std::ios::binary);
     if(input_stream.good()) {
+        Json config_json;
+        input_stream >> config_json;
         input_stream.close();
-        parseVault("./primary.vlt");
+
+        for(auto& pair : config_json.items()) {
+            if(pair.key() == "qstylesheet") {
+                LoadStylesheet(pair.value());
+            } else if(pair.key() == "vault") {
+                parseVault(QString::fromStdString(pair.value()));
+            }
+        }
     }
 
     // Disables the save button by default, until it's re-enabled by the open method after a vault has been loaded.
