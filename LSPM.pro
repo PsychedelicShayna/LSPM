@@ -28,8 +28,7 @@ FORMS += \
     source/uis/main_dlg.ui \
     source/uis/generator_dlg.ui
 
-
-# Windows OpenSSL Setup.
+# Windows library linking, and include paths.
 win32 {
     # OpenSSL Include directory.
     INCLUDEPATH += C:/OpenSSL-Win64/include/
@@ -46,16 +45,12 @@ win32 {
     CONFIG(debug, debug|release): LIBS += -llibcrypto64MDd
 }
 
-# Mac OpenSSL Setup.
-macx {
-    # To-Do
-}
-
-# Linux OpenSSL Setup.
+# Unix library linking, and include paths.
 unix {
-    INCLUDEPATH += /usr/src/openssl/include
-    DEPENDPATH += /usr/src/openssl/include
+    INCLUDEPATH += /usr/local/include/
+    DEPENDPATH += /usr/local/include/
+    LIBS += -L/usr/local/lib/
 
-    LIBS += -L/usr/lib/openssl/
+    # libcrypto.a Should be in /usr/local/lib
     LIBS += -lcrypto
 }
