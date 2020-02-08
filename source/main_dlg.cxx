@@ -422,7 +422,12 @@ void MainWindow::saveVaultAs() {
 void MainWindow::parseVault(const QString& load_path) {
     std::ifstream input_stream(load_path.toStdString(), std::ios::binary);
     if(input_stream.good()) {
-        std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(input_stream)), (std::istreambuf_iterator<char>()));
+        // Copy is made, in case decryption fails. Copy of the original bytes is needed to re-attempt decryption.
+        std::vector<uint8_t> original_bytes_copy((std::istreambuf_iterator<char>(input_stream)), (std::istreambuf_iterator<char>()));
+
+        // Bytes that will actually be loadeed, assigned to decrypted original bytes if parsing error occurs.
+        std::vector<uint8_t> target_bytes(original_bytes_copy);
+
         input_stream.close();
 
         ui->saveButton->setEnabled(false);
@@ -430,8 +435,9 @@ void MainWindow::parseVault(const QString& load_path) {
 
         while(true) {
             try {
-                const std::string json_data(bytes.begin(), bytes.end());
+                const std::string json_data(target_bytes.begin(), target_bytes.end());
                 Json::parse(json_data);
+
                 deserializeAccounts(QString::fromStdString(json_data));
 
                 lastVaultPath = load_path;
@@ -439,9 +445,10 @@ void MainWindow::parseVault(const QString& load_path) {
                 break;
             } catch(const Json::exception&) {
                 QString submitted_text;
+
                 if(spawnTextPrompt("Parsing exception. The vault is probably encrypted (or corrupted). Please enter your encryption key.", &submitted_text, true)) {
                     const std::string& plain_key = submitted_text.toStdString();
-                    bytes = Crypto::Aes256CbcAutoDecrypt(bytes, plain_key);
+                    target_bytes = Crypto::Aes256CbcAutoDecrypt(original_bytes_copy, plain_key);
 
                     lastVaultKey = QString::fromStdString(plain_key);
                     lastVaultEncrypted = true;
