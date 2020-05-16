@@ -422,11 +422,11 @@ void MainWindow::saveVaultAs() {
 void MainWindow::parseVault(const QString& load_path) {
     std::ifstream input_stream(load_path.toStdString(), std::ios::binary);
     if(input_stream.good()) {
-        // Copy is made, in case decryption fails. Copy of the original bytes is needed to re-attempt decryption.
-        std::vector<uint8_t> original_bytes_copy((std::istreambuf_iterator<char>(input_stream)), (std::istreambuf_iterator<char>()));
+        // Original bytes loaded from file.
+        std::vector<uint8_t> original_bytes((std::istreambuf_iterator<char>(input_stream)), (std::istreambuf_iterator<char>()));
 
-        // Bytes that will actually be loadeed, assigned to decrypted original bytes if parsing error occurs.
-        std::vector<uint8_t> target_bytes(original_bytes_copy);
+        // Bytes that will actually be decrypted.
+        std::vector<uint8_t> target_bytes(original_bytes);
 
         input_stream.close();
 
@@ -437,7 +437,6 @@ void MainWindow::parseVault(const QString& load_path) {
             try {
                 const std::string json_data(target_bytes.begin(), target_bytes.end());
                 Json::parse(json_data);
-
                 deserializeAccounts(QString::fromStdString(json_data));
 
                 lastVaultPath = load_path;
@@ -445,10 +444,9 @@ void MainWindow::parseVault(const QString& load_path) {
                 break;
             } catch(const Json::exception&) {
                 QString submitted_text;
-
                 if(spawnTextPrompt("Parsing exception. The vault is probably encrypted (or corrupted). Please enter your encryption key.", &submitted_text, true)) {
                     const std::string& plain_key = submitted_text.toStdString();
-                    target_bytes = Crypto::Aes256CbcAutoDecrypt(original_bytes_copy, plain_key);
+                    target_bytes = Crypto::Aes256CbcAutoDecrypt(original_bytes, plain_key);
 
                     lastVaultKey = QString::fromStdString(plain_key);
                     lastVaultEncrypted = true;
@@ -530,6 +528,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     resize(primary_screen_geometry.width()/2, primary_screen_geometry.height()/2);
 
+    // Disables the save button by default, until it's re-enabled by the open method after a vault has been loaded.
+    ui->saveButton->setEnabled(false);
+
     // Attempt to load and apply the main configuration file.
     std::ifstream input_stream("./config.json", std::ios::binary);
 
@@ -546,9 +547,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
             }
         }
     }
-
-    // Disables the save button by default, until it's re-enabled by the open method after a vault has been loaded.
-    ui->saveButton->setEnabled(false);
 
     // Makes sure that there's a starting distance of 200 between the name/value columns in the account tree.
     ui->accountTree->setColumnWidth(0, 200);
