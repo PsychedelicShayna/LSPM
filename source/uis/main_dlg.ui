@@ -20,7 +20,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
       <item>
        <layout class="QHBoxLayout" name="buttonHLayout">
         <item>
@@ -140,29 +140,43 @@
         </column>
        </widget>
       </item>
-      <item>
-       <widget class="QLineEdit" name="searchBar">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Menlo</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="placeholderText">
-         <string>Search</string>
-        </property>
-       </widget>
-      </item>
      </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="font">
+       <font>
+        <family>Menlo</family>
+       </font>
+      </property>
+      <property name="title">
+       <string>Search</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLineEdit" name="searchBar">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Menlo</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="placeholderText">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </item>
    </layout>
   </widget>
