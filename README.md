@@ -8,7 +8,7 @@ Why make this password manager when there are services such as LastPass, DashLan
 Rather than opting for a `username:password` system, where every account has a fixed amount of fields, I made it variable. The lack of this option in other password managers seriously bothered me for a long time. Sometimes, it's not as simple as `username:password`, sometimes you have to store an email, or security questions, or perhaps some kind of recovery code, or even multiple usernames/passwords for alternate accounts, etc. So I made it so that you decide the amount of keys, and their values. You can add any key you like, and assign it to any value you like. 
 
 ### Theming 
-Since this is Qt, and Qt has the QSS style format, implementing basic theming support was pretty simple. You can apply any Qt stylesheet you want to this password manager, simply place your sytlesheet in the same directory as the binary, and name it style.qss, it will be automatically applied.
+Since this is Qt, and Qt has the QSS style format, implementing basic theming support was pretty simple. You can apply any Qt stylesheet you want to this password manager, simply modify `config.json`'s `"qstylesheet": ""` field, and specify the path of your style.
 
 ### Integrated Password Generator
 Like most password managers, this includes a password generator directly built in, two actually. There's a password generator dialog ripped from my [other project](https://github.com/Shayna-x02/Password-Generator) as well as a password manager built into the entry context menu, meaning you can quickly generate passwords on the fly, or go through the dialg, it's up to you.
